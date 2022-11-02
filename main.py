@@ -1,5 +1,5 @@
 import maskpass 
-
+import sqlite3
 class user():
     def __init__(self):
         pass
@@ -22,45 +22,45 @@ class user():
         print("passwor",self.password ) 
         #TODO if UID exist in DB ask again the user of new UID
         # if UID exist doesn't exist then return uid
-        # return self.UID
+        return self.UID
     def logout(self):
         # logout
         pass
-# class pages():
-#     def __init__(self,uid):
-#         self.uid = uid
-#     def home(self):
-#         print("Welcome ",  self.uid)
-#         print("What do you want to do (select number)?")
-#         print("1. Start a session")
-#         print("2. Search for songs and playlists.")
-#         print("3. Search for artists.")
-#         print("4. End the session.")
-#         print("5. Log Out")
-#         print("6. Exit")
-#         choice = input("Enter your choice: ")
-#         if choice == "1":
-#             self.StartSession()
-#         elif choice == "2":
-#             self.searchSongsAndPlaylists()
-#         elif choice == "3":
-#             self.playlist()
-#         elif choice == "4":
-#             self.setting()
-#         elif choice == "5":
-#             self.logout()
-#         elif choice == "6":
-#             exit()
-#     def searchSongsAndPlaylists(self):
-#         pass
-#     def Searchplaylist(self):
-#         pass
-#     def StartSession(self):
-#         pass
-#     def setting(self):
-#         pass
-#     def logout(self):
-#         pass
+class pages():
+    def __init__(self,uid):
+        self.uid = uid
+    def home(self):
+        print("Welcome ",  self.uid)
+        print("What do you want to do (select number)?")
+        print("1. Start a session")
+        print("2. Search for songs and playlists.")
+        print("3. Search for artists.")
+        print("4. End the session.")
+        print("5. Log Out")
+        print("6. Exit")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            self.StartSession()
+        elif choice == "2":
+            self.searchSongsAndPlaylists()
+        elif choice == "3":
+            self.playlist()
+        elif choice == "4":
+            self.setting()
+        elif choice == "5":
+            self.logout()
+        elif choice == "6":
+            exit()
+    def searchSongsAndPlaylists(self):
+        pass
+    def Searchplaylist(self):
+        pass
+    def StartSession(self):
+        pass
+    def setting(self):
+        pass
+    def logout(self):
+        pass
 
 def main():
     while True:
@@ -78,12 +78,17 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                user1.login()
+                uid = user1.login()
+                p = pages()
+                print(uid)
+                p.home(uid)
             elif  inp2  == "2":
                 print("Sign up")
                 # signup
                 user1 = user()
                 user1.signup()
+                p = pages()
+                p.home()
             elif  inp2  == "3":
                 print("Exit")
                 break
@@ -97,7 +102,9 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                user1.login()
+                uid = user1.login()
+                p = pages()
+                p.home(uid)
             elif  inp2  == "2":
                 print("Exit")
                 break
