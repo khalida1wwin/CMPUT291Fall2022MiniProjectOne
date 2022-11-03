@@ -1,9 +1,12 @@
 import maskpass 
 import sqlite3
 import artist
+import userAction
+import songactions
 class user():
-    def __init__(self):
-        pass
+    def __init__(self,connection, cursor):
+        self.connection = connection
+        self.cursor = cursor
     def login(self,UORA):
         # login
         if UORA == "U":
@@ -37,7 +40,7 @@ class user():
                 userExist = userExist.fetchone()
                 if userExist[0]:
                     print("successful log in")
-                    connection.commit()
+                    self.connection.commit()
                     return self.aid
                 else:
                     print("artist does not exist")
@@ -55,18 +58,18 @@ class user():
             # if UID exist doesn't exist then return uid
             checkUser = ('''
                 SELECT EXISTS(SELECT * FROM users WHERE uid=:newUID)''')
-            userExist = cursor.execute(checkUser,{"newUID":self.UID})
+            userExist = self.cursor.execute(checkUser,{"newUID":self.UID})
             userExist = userExist.fetchone()
             if userExist[0]:
                 print("userlog in")
-                connection.commit()
+                self.connection.commit()
                 print("please try new user id")
                 # return self.UID
             else:
                 newUser = ('''
                 INSERT INTO users(uid,name,pwd) VALUES(?,?,?)''')
                 cursor.execute(newUser,(self.UID,self.userName,self.password))
-                connection.commit()
+                self.connection.commit()
                 print("successful sign up")
                 return self.UID
     def logout(self,uid):
@@ -75,8 +78,11 @@ class user():
         # exit()
 
 class pages():
-    def __init__(self,uid):
+    def __init__(self,uid,connection, cursor):
+        self.cursor = cursor
+        self.connection = connection
         self.uid = uid
+        self.session_id = None
     def home(self):
         print("Welcome ",  self.uid)
         print("What do you want to do (select number)?")
@@ -94,15 +100,15 @@ class pages():
         elif choice == "3":
             self.SearchForArtists()
         elif choice == "4":
-            self.setting()
+            self.EndSession()
         elif choice == "5":
             self.logout()
         elif choice == "6":
             exit()
     def searchSongsAndPlaylists(self):
-        earch = input("What do you want to search for? (seprate keywords with comma)")
-        print("=> search results : (playlist name or song name)")
-        print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
+        userAction.searchSongs(self.session_id,self.uid,connection,cursor)
+        # print("=> search results : (playlist name or song name)")
+        # print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
         print("What do you what to do (select number)?")
         print("1. See more search result")
         print("2. Enter the result no")
@@ -141,9 +147,11 @@ class pages():
             self.logout()
         elif choice == "5":
             exit()
+
     def StartSession(self):
-        print("Session #:")
-        print("Session start date: xx/x/xxxx")
+        self.session_id, startDate =userAction.session_start(self.session_id,self.uid,self.connection,self.cursor)
+        print("Session:",self.session_id)
+        print("Session start date:",startDate)
         print("What do you want to do (select number)?")
         print("1. Go to home page")
         print("2. Log Out")
@@ -155,24 +163,40 @@ class pages():
             self.logout()
         elif choice == "3":
             exit()
+    
     def moreSearchResult(self):
         pass
     def SelectResult(self):
         pass
+    def EndSession(self):
+        self.session_id = userAction.end_session(self.session_id,self.uid,self.connection,self.cursor)
+        
+        print("What do you want to do (select number)?")
+        print("1. Go to home page")
+        print("2. Log Out")
+        print("3. Exit ")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            self.home()
+        elif choice == "2":
+            self.logout()
+        elif choice == "3":
+            exit()
     def logout(self):
+        userAction.end_session(self.session_id)
         self.uid = None
 
 
 if __name__ == "__main__":
     path="./mini.db"
-    global connection, cursor
+    global connection, cursor, curr_id
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
     cursor.execute(' PRAGMA forteign_keys=ON; ')
     connection.commit()
-
+    curr_id = None
     while True:
-        curr_id = None
+        
         print("Welcome to the songs App!")
         inp1  = input("Are you an artists(a) or user(u): ")
         # print(inp)
@@ -186,9 +210,9 @@ if __name__ == "__main__":
             if inp2  == "1":
                 print("Log in")
                 # login
-                user1 = user()
+                user1 = user(connection, cursor)
                 curr_id = user1.login("U")
-                p = pages(curr_id)
+                p = pages(curr_id,connection, cursor)
                 print(curr_id)
                 p.home()
             elif  inp2  == "2":

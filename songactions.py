@@ -1,51 +1,48 @@
 import sqlite3
 import string
+import main
+import userAction
 
-connection = None
-cursor = None
-
-def info(sid,uid):
+def info(sid,uid,connection, cursor):
     # More information for a song is the names of artists who performed it 
     # in addition to id, title and duration of the song as well as the names of 
     # playlists the song is in (if any).
-    global connection, cursor
-    print("Song Details\n")
+    print("Song Details:")
     cursor.execute('''SELECT sid, title, duration 
                     FROM songs 
-                    WHERE sid = ?''', sid)
+                    WHERE sid =:SID''', {"SID":sid})
     all_entry = cursor.fetchall()
     for one_entry in all_entry:
         print(one_entry)
-    print("Artist Details\n")
+    print("\nArtist Details:")
     cursor.execute('''SELECT a.name
                     FROM perform p, artists a
-                    WHERE p.sid = ?
-                    AND a.aid = p.aid''', sid)
+                    WHERE p.sid =:SID
+                    AND a.aid = p.aid''', {"SID":sid})
     artists = cursor.fetchall()
     for one_entry in artists:
         print(one_entry)
-    print("Playlist Details\n")
+    print("\nPlaylist Details:")
     cursor.execute('''SELECT p.title 
                     FROM playlists p, plinclude pl
                     WHERE pl.pid = p.pid 
-                    AND pl.sid = ?''', sid)
+                    AND pl.sid =:SID''', {"SID":sid})
     playlist = cursor.fetchall()
     for one_entry in playlist:
         print(one_entry)
-    songAction(sid,uid) # Go back to the menu after everything is done??
+    songAction(sid,uid,connection, cursor) # Go back to the menu after everything is done??
     return
 
-def listen(sid, uid):
+def listen(sid, uid,connection, cursor):
     #This function updates the listen count if a song is already listened to in a session. It inserts
     # a listen event to the session if the song is not listened to in the session. It creates a new session, if there is no existing one.
-    global connection, cursor
     checkSession = '''SELECT sno FROM sessions
-                    WHERE uid LIKE ? 
+                    WHERE uid=:SID 
                     AND end IS NULL;'''
-    sessionExist = cursor.execute(checkSession, uid)
+    cursor.execute(checkSession, {"SID":sid})
     sessionExist = cursor.fetchone()
-    if(len(sessionExist)==0):
-        sno = startSession(uid) 
+    if(sessionExist)==0:
+        sno = userAction.session_start(uid,connection, cursor) 
         #Assumed that the session number is returned 
     else:
         sno = checkSession[0]
@@ -54,10 +51,10 @@ def listen(sid, uid):
                        WHERE uid LIKE ?
                        AND sid = ?
                        AND sno = ?'''
-        songExist = cursor.execute(checkSong, (uid,sid,sno))
+        cursor.execute(checkSong, (uid,sid,sno))
         songExist = cursor.fetchone()
         #You can assume the user cannot have more than one active session.
-        if len(songExist)!=0:
+        if songExist!=0:
             cursor.execute= ('''UPDATE listen 
                             SET cnt=cnt+1 
                             WHERE uid=? 
@@ -71,7 +68,7 @@ def listen(sid, uid):
     songAction(sid,uid)
     return
 
-def addToPL(sid, uid):
+def addToPL(sid, uid,connection, cursor):
     #This function  adds this song (sid) to an existing playlist owned by the user (if any) or to a new playlist.
     #Can have same song multiple time in the playlist
     playlist = input("Enter the name of the plylist you wan to add to") 
@@ -86,7 +83,7 @@ def addToPL(sid, uid):
         pid = songExist[0][0]
         cursor.execute('''SELECT MAX(sorder) 
                         FROM plinclude 
-                        WHERE pid= ?;''',pid)
+                        WHERE pid=:PID;''',{"PID":pid})
         sorder = cursor.fetchall()[0][0] + 1
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
         connection.commit()
@@ -94,40 +91,42 @@ def addToPL(sid, uid):
         #New playlist
         cursor.execute('''SELECT MAX(pid) 
                         FROM playlist
-                        WHERE uid= ?;''',uid)
+                        WHERE uid=:UID;''',{"UID":uid})
         pid = cursor.fetchall()[0][0] + 1
         newsorder = 1
         cursor.execute('''INSERT INTO playlist VALUES (?, ?, ?)''',(pid,playlist,uid))
         connection.commit()
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,newsorder))
         connection.commit()
-        songAction(sid,uid)
+        songAction(sid,uid,connection, cursor)
     return
 
-def songAction(sid, uid):
+def songAction(sid, uid,connection, cursor):
     # This function displays all action that can be performed on a song by a user and also provides option to go to user menu, logout or quit the program.
-    print("Please select a number between 1 to 6 as desceibed below):\n ")
-    print('1. Listen to this song.\n')
-    print('2. More information.\n')
-    print('3. Add to playlist.\n')
-    print('4. Menu\n')
-    print('5. Logout\n')
-    print('6. Exit\n')
-    cmd = int(input())
+    print("Please select a number between 1 to 6 as desceibed below):")
+    print('1. Listen to this song.')
+    print('2. More information.')
+    print('3. Add to playlist.')
+    print('4. Go to home page')
+    print('5. Logout')
+    print('6. Exit')
+    cmd = input()
     if cmd == '1':
-        listen(sid,uid) 
+        listen(sid,uid,connection, cursor) 
         return
     elif cmd == '2':
-        info(sid,uid)
+        print("info")
+        info(sid,uid,connection, cursor)
         return
     elif cmd == '3':
-        addToPL(sid,uid)
+        addToPL(sid,uid,connection, cursor)
         return
     elif cmd == '4':
-        menu()
+        p = main.pages(uid,connection, cursor)
+        p.home(uid)
         return
     elif cmd == '5':
-        logout()
+        main.logout(uid)
         return
     elif cmd == '6':
         exit()
