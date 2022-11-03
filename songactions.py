@@ -97,6 +97,7 @@ def addToPL(sid, uid):
         connection.commit()
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,newsorder))
         connection.commit()
+        songAction(sid,uid)
     return
 
 def songAction(sid, uid):
