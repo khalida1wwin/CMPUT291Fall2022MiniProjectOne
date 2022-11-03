@@ -36,6 +36,8 @@ def info(sid,uid):
     return
 
 def listen(sid, uid):
+    #This function updates the listen count if a song is already listened to in a session. It inserts
+    # a listen event to the session if the song is not listened to in the session. It creates a new session, if there is no existing one.
     global connection, cursor
     checkSession = '''SELECT sno FROM sessions
                     WHERE uid LIKE ? 
