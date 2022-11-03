@@ -71,8 +71,7 @@ class user():
                 return self.UID
     def logout(self,uid):
         # logout
-        self.UID = None
-        self.password = None
+        logout(uid)
         # exit()
 
 class pages():
@@ -224,4 +223,10 @@ if __name__ == "__main__":
         else:
             print("Invalid input")
             continue
+
+def logout(uid):
+    # logout
+    global curr_id
+    curr_id = None
+
 

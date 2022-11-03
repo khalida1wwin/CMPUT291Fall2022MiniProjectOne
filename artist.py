@@ -1,6 +1,6 @@
 import sqlite3
 import string
-
+import main
 # connection = None
 # cursor = None
 # Add comments later, Check if query works, check if the inputs are same 
@@ -23,6 +23,9 @@ def addSong(aid,connection, cursor):
         try:
             duration = int(input("Enter the song duration: "))
             assert duration > 0 
+        except ValueError:
+            print("Please enter a positive integer")
+            continue
         except AssertionError:
             print("Error! Please input a positive number.")
             #Error if a negative no. or 0 is entered
@@ -33,25 +36,21 @@ def addSong(aid,connection, cursor):
                   WHERE s.title LIKE ?
                   AND s.duration = ?''')
     #Query to check if any song with same title and duration exists in the database
-<<<<<<< Updated upstream
+    
     cursor.execute(checkSong, (title, duration))
-=======
-    print("title",title)
-    print("duration",duration)
-    songExist = cursor.execute(checkSong, (title, duration))
->>>>>>> Stashed changes
     songExist = cursor.fetchone()
     if (songExist):
         print("This song already exists in the database")
-        artistAction(aid) 
+        artistAction(aid,connection, cursor) 
     else:
+        cursor.execute('''SELECT MAX(s.sid) 
+                    FROM songs s;''')
+        newsid = cursor.fetchall()[0][0] + 1 #Unique sid to add new song
         print("Adding the song")
         cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
-        cursor.commit()
+        connection.commit()
     
-    cursor.execute('''SELECT MAX(s.sid) 
-                    FROM songs s;''')
-    newsid = cursor.fetchall()[0][0] + 1 #Unique sid to add new song
+    
     
 
     artists = list(map(str, input("Enter the ids of artists (separated by space) performing this song. ").split()))
@@ -60,11 +59,12 @@ def addSong(aid,connection, cursor):
         
     cursor.execute('''SELECT aid FROM artists''') 
     artist_aid= cursor.fetchall() 
+    artist_aid = [i[0] for i in artist_aid] 
     for i in artists:
         if i not in artist_aid:
             # to check if all the entered aids are there in database
-            print("Error! The artist aid" + i + "does not exist")
-            addSong(aid) #Going back to add song again
+            print("Error! The artist aid " + i + " does not exist. With at least one of the artists the songe has been added to the data base!")
+            addSong(aid,connection, cursor) #Going back to add song again
             return
 
     
@@ -73,7 +73,7 @@ def addSong(aid,connection, cursor):
         cursor.execute('INSERT INTO perform VALUES(?, ?)', (i, newsid))
         connection.commit()
     ##adding additional performers 
-    artistAction(aid) #Going back to artist action
+    artistAction(aid,connection, cursor) #Going back to artist action
     return
 
 def topFans(aid,connection, cursor):
@@ -81,18 +81,19 @@ def topFans(aid,connection, cursor):
 
     print("Top 3 Fans are:\n")
     cursor.execute('''SELECT u.uid, u.name, SUM(l.cnt * s.duration) 
-                    FROM listen l, perform p, user u, songs s, artists a
-                    WHERE p.aid= ?
+                    FROM listen l, perform p, users u, songs s, artists a
+                    WHERE p.aid=:AID
                     AND l.sid = s.sid 
                     AND s.sid = p.sid
                     AND p.aid = a.aid
                     AND l.uid = u.uid
                     GROUP BY l.uid, p.aid
                     ORDER BY SUM(l.cnt * s.duration) DESC
-                    LIMIT 3;''', aid)
+                    LIMIT 3;''', {"AID":aid})
     all_entry = cursor.fetchall()
     for one_entry in all_entry:
         print(one_entry)
+    print("\n")
     return
 
 def topPlaylist(aid,connection, cursor):
@@ -101,15 +102,16 @@ def topPlaylist(aid,connection, cursor):
     print("Top 3 Playlists are:\n")
     cursor.execute('''SELECT pli.pid, pl.title, COUNT(*)
                     FROM perform p, plinclude pli, playlists pl
-                    WHERE p.aid = ?
+                    WHERE p.aid =:AID
                     AND p.sid = pli.sid
                     AND pl.pid = pli.pid
                     GROUP BY pli.pid
                     ORDER BY COUNT(*) DESC
-                    LIMIT 3''',aid)
+                    LIMIT 3''', {"AID":aid})
     all_entry = cursor.fetchall()
     for one_entry in all_entry:
         print(one_entry)
+    artistAction(aid,connection,cursor)
     return
 
 def artistAction(aid,connection, cursor):
@@ -127,7 +129,7 @@ def artistAction(aid,connection, cursor):
         return 
     
     elif cmd == 3:
-        logout()
+        main.logout(aid)
         print("Logout Successful")
         return False, False
 
@@ -136,7 +138,7 @@ def artistAction(aid,connection, cursor):
     else:
         print("Incorrect input.")
     return
-    
+
 
 # def main():
 #     global connection, cursor
