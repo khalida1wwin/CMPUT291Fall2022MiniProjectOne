@@ -72,6 +72,7 @@ def listen(sid, uid):
     return
 
 def addToPL(sid, uid):
+    #This function  adds this song (sid) to an existing playlist owned by the user (if any) or to a new playlist.
     #Can have same song multiple time in the playlist
     playlist = input("Enter the name of the plylist you wan to add to") 
     print("It will create a newplaylist of it doesn't exist or will add to the given playlist name")
@@ -104,6 +105,7 @@ def addToPL(sid, uid):
     return
 
 def songAction(sid, uid):
+    # This function displays all action that can be performed on a song by a user and also provides option to go to user menu, logout or quit the program.
     print("Please select a number between 1 to 6 as desceibed below):\n ")
     print('1. Listen to this song.\n')
     print('2. More information.\n')
