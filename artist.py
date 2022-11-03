@@ -33,7 +33,13 @@ def addSong(aid,connection, cursor):
                   WHERE s.title LIKE ?
                   AND s.duration = ?''')
     #Query to check if any song with same title and duration exists in the database
+<<<<<<< Updated upstream
     cursor.execute(checkSong, (title, duration))
+=======
+    print("title",title)
+    print("duration",duration)
+    songExist = cursor.execute(checkSong, (title, duration))
+>>>>>>> Stashed changes
     songExist = cursor.fetchone()
     if (songExist):
         print("This song already exists in the database")
