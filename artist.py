@@ -17,7 +17,7 @@ def addSong(aid,connection, cursor):
     # The artists adds a song to the database by providing a title, a duration and the performing artist and adding a unique song id to it.
     # It also prevents adding duplicate songs with same name and duration. 
 
-    title= map(string, input("Enter the song title: "))
+    title= input("Enter the song title: ")
     while title:
     #loops till a positive integer is entered after the title is entered
         try:
@@ -33,7 +33,7 @@ def addSong(aid,connection, cursor):
                   WHERE s.title LIKE ?
                   AND s.duration = ?''')
     #Query to check if any song with same title and duration exists in the database
-    songExist = cursor.execute(checkSong, (title, duration))
+    cursor.execute(checkSong, (title, duration))
     songExist = cursor.fetchone()
     if (songExist):
         print("This song already exists in the database")
@@ -42,6 +42,7 @@ def addSong(aid,connection, cursor):
         print("Adding the song")
         cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
         cursor.commit()
+    
     cursor.execute('''SELECT MAX(s.sid) 
                     FROM songs s;''')
     newsid = cursor.fetchall()[0][0] + 1 #Unique sid to add new song
