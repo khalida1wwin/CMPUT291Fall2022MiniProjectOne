@@ -5,8 +5,7 @@ import random
 import datetime
 
 
-def session_start():
-    global connection, cursor, session_id, uid
+def session_start(connection,cursor,session_id,uid):
     #the session_start() function checks for a session id to see if a session is already in place or not
     #the system assigns a session number incase its not started.
     if session_id != None:
@@ -32,8 +31,7 @@ def session_start():
 
 
 
-def end_session():
-    global connection, cursor, session_id, uid
+def end_session(connection,cursor,session_id,uid):
     # checks for a valid and an active session id to 
     if session_id != None:
         endDate = datetime.now(0).strftime("%d %m %Y %h: %m")
@@ -45,8 +43,8 @@ def end_session():
     
     return session_id,uid
 		
-def searchSongs():
-    global connection, cursor, session_id, uid 
+def searchSongs(connection,cursor,session_id,uid):
+    
     #takes the user keyword or a bunch of user keywords.
     userkeywords = input("please enter your keywords to find matching songs/playlists: ").split()
     if len(userkeywords) == 0:
