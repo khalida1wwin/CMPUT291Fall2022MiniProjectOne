@@ -102,17 +102,16 @@ def searchSongs():
 							if useroption2.isnumeric():
 								break
 						song_id = matchingsongs[useroption2-1][0]
-                        action = input("Please enter a song action to perform: 1 action a 2 actiob b...")
-                        if action == 1:
-                            addSong(song_id)
+                        action = input("Would you like to access the songAction() menu? Press Y")
+                        if action == 'Y':
+                            songAction(song_id,uid)
                         # if action ==
 					    break
 					else:
 						song_id = matchingsongs[useroption-1][0]
-                        action = input("Please enter a song action to perform: 1 action a 2 actiob b...")
-                        if action == 1:
-                            addSong(song_id)
-                        # if action ==
+                        action = input("Would you like to access the songAction() menu? Press Y")
+                        if action == 'Y':
+                            songAction(song_id,uid)
 					    break
 				print(i+1, matchingsongs[i])
     else:
