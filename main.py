@@ -37,7 +37,7 @@ class user():
                 if userExist[0]:
                     print("successful log in")
                     connection.commit()
-                    return self.UID
+                    return self.aid
                 else:
                     print("artist does not exist")
 
@@ -212,8 +212,8 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                uid = user1.login("A")
-                p = pages()
+                curr_id = user1.login("A")
+                p = pages(curr_id)
                 p.home()
             elif  inp2  == "2":
                 print("Exit")
