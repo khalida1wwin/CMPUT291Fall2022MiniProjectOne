@@ -1,17 +1,6 @@
 import sqlite3
 import string
 import main
-# connection = None
-# cursor = None
-# Add comments later, Check if query works, check if the inputs are same 
-# def connect(path):
-#     #remove this
-#     global connection, cursor
-#     connection = sqlite3.connect(path)
-#     cursor = connection.cursor()
-#     cursor.execute(' PRAGMA forteign_keys=ON; ')
-#     connection.commit()
-#     return
 
 def addSong(aid,connection, cursor):
     # The artists adds a song to the database by providing a title, a duration and the performing artist and adding a unique song id to it.
@@ -49,10 +38,6 @@ def addSong(aid,connection, cursor):
         print("Adding the song")
         cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
         connection.commit()
-    
-    
-    
-
     artists = list(map(str, input("Enter the ids of artists (separated by space) performing this song. ").split()))
     if aid not in artists: #if user forgets to input their aid to add to the artists
         artists.append(aid) #Adding the current artist aid to the list of all artist performing the song
@@ -66,8 +51,6 @@ def addSong(aid,connection, cursor):
             print("Error! The artist aid " + i + " does not exist. With at least one of the artists the songe has been added to the data base!")
             addSong(aid,connection, cursor) #Going back to add song again
             return
-
-    
     print("Adding all the performers of the song")
     for i in artists:
         cursor.execute('INSERT INTO perform VALUES(?, ?)', (i, newsid))
@@ -138,9 +121,3 @@ def artistAction(aid,connection, cursor):
     else:
         print("Incorrect input.")
     return
-
-
-# def main():
-#     global connection, cursor
-#     path="./test.db"
-#     connect(path)
