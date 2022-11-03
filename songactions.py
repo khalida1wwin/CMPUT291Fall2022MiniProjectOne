@@ -29,7 +29,8 @@ def info(sid,uid):
                     FROM playlists p, plinclude pl
                     WHERE pl.pid = p.pid 
                     AND pl.sid = ?''', sid)
-    for one_entry in artists:
+    playlist = cursor.fetchall()
+    for one_entry in playlist:
         print(one_entry)
     songAction(sid,uid) # Go back to the menu after everything is done??
     return
