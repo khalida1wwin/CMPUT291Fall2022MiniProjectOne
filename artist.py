@@ -5,6 +5,7 @@ connection = None
 cursor = None
 # Add comments later, Check if query works, check if the inputs are same 
 def connect(path):
+    #remove this
     global connection, cursor
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
