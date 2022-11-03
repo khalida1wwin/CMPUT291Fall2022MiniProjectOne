@@ -3,7 +3,7 @@ import time
 import sys
 import random
 import datetime
-
+import main
 
 def session_start(connection,cursor,session_id,uid):
     #the session_start() function checks for a session id to see if a session is already in place or not
@@ -56,11 +56,11 @@ def searchSongs(connection,cursor,session_id,uid):
     songquery = "SELECT DISTINCT s.sid, s.title, s.duration FROM songs s"
     index = 0
     for word in userkeywords:
-	    if index == 0:
-	        songquery += " AND (s.title LIKE '%{}%' )".format(word)
-        else:
-	        songquery += " OR (s.title LIKE '%{}%' )".format(word)
-        index += 1
+            if index == 0:
+                songquery += " AND (s.title LIKE '%{}%' )".format(word)
+            else:
+                songquery += " OR (s.title LIKE '%{}%' )".format(word)
+            index += 1
     songquery += " ORDER BY ("
     for word in userkeywords:
         songquery += "CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
@@ -98,23 +98,24 @@ def searchSongs(connection,cursor,session_id,uid):
                         for k in range(5, len(matchingsongs)):
                             print("Song ",k+1, matchingsongs[k])
                         while True:
-							useroption2 = input("Please Select a song: ")
-							if useroption2.isnumeric():
-								break
-						song_id = matchingsongs[useroption2-1][0]
+                                useroption2 = input("Please Select a song: ")
+                                if useroption2.isnumeric():
+                                    break
+						# song_id = matchingsongs[useroption2-1][0]
+                        song_id = matchingsongs[useroption2-1][0]
                         action = input("Would you like to access the songAction() menu? Press Y")
                         if action.upper() == 'Y':
                             songAction(song_id,uid)
-					    break
-					else:
-						song_id = matchingsongs[useroption-1][0]
+                        break
+                    else:
+                        song_id = matchingsongs[useroption-1][0]
                         action = input("Would you like to access the songAction() menu? Press Y")
                         if action == 'Y':
                             songAction(song_id,uid)
-					    break
-				print(i+1, matchingsongs[i])
+                        break
+                print(i+1, matchingsongs[i])
     else:
-		print("The query failed to fetch data")
+	    print("The query failed to fetch data")
 
 
 
@@ -179,16 +180,16 @@ def searchPlaylists(connection,cursor,session_id,uid):
                         if action == 'Y':
                             songAction(song_id,uid)
                         # if action ==
-					    break
-					else:
-						song_id = matchingsongs[useroption-1][0]
+                        break
+                    else:
+                        song_id = matchingsongs[useroption-1][0]
                         action = input("Would you like to access the songAction() menu? Press Y")
                         if action == 'Y':
                             songAction(song_id,uid)
-					    break
-				print(i+1, matchingsongs[i])
+                        break
+                print(i+1, matchingsongs[i])
     else:
-		print("The query failed to fetch data")
+        print("The query failed to fetch data")
 
 
 
