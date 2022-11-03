@@ -35,9 +35,6 @@ def addSong(aid):
     #Query to check if any song with same title and duration exists in the database
     songExist = cursor.execute(checkSong, (title, duration))
     songExist = cursor.fetchone()
-    cursor.execute('''SELECT MAX(s.sid) 
-                    FROM songs s;''')
-    newsid = cursor.fetchall()[0][0] + 1 #Unique sid to add new song
     if (songExist):
         print("This song already exists in the database")
         artistAction(aid) 
@@ -45,6 +42,10 @@ def addSong(aid):
         print("Adding the song")
         cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
         cursor.commit()
+    cursor.execute('''SELECT MAX(s.sid) 
+                    FROM songs s;''')
+    newsid = cursor.fetchall()[0][0] + 1 #Unique sid to add new song
+    
 
     artists = list(map(str, input("Enter the ids of artists (separated by space) performing this song. ").split()))
     if aid not in artists: #if user forgets to input their aid to add to the artists
