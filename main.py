@@ -3,26 +3,66 @@ import sqlite3
 class user():
     def __init__(self):
         pass
-    def login(self):
+    def login(self,UORA):
         # login
-        self.UID = input("Enter your new user id: ")
-        self.password = maskpass.askpass(mask="")
-        # print("passwor",self.password )
-        #TODO: check if the user in the DB
-        # return bool val if correct and user id and password exist
-        # in DB
-        # if user in the DB
+        if UORA == "U":
+            while True:
+                self.UID = input("Enter your user id: ")
+                self.password = maskpass.askpass(mask="")
+                # print("passwor",self.password )
+                #TODO: check if the user in the DB
+                # return bool val if correct and user id and password exist
+                # in DB
+                # if user in the DB
+                checkUser = ('''
+                SELECT EXISTS(SELECT * FROM users WHERE uid = ? AND pwd = ?)''')
+                userExist = cursor.execute(checkUser,(self.UID,self.password))
+                userExist = userExist.fetchone()
+                if userExist[0]:
+                    print("successful log in")
+                    connection.commit()
+                    return self.UID
+                else:
+                    print("user does not exist")
+                    
+        elif UORA == "A":
+            while True:
+                self.aid = input("Enter your artist id: ")
+                self.password = maskpass.askpass(mask="")
+                # print("passwor",self.password )
+                checkUser = ('''
+                SELECT EXISTS(SELECT * FROM artists WHERE aid = ? AND pwd = ?)''')
+                userExist = cursor.execute(checkUser,(self.aid,self.password))
+                userExist = userExist.fetchone()
+                if userExist[0]:
+                    print("successful log in")
+                    connection.commit()
+                    return self.UID
+                else:
+                    print("artist does not exist")
+
         # return self.UID
     def signup(self):
         # signup
         # login
-        self.UID = input("Enter your new user id: ")
-        self.userName = input("Enter your name: ")
-        self.password = maskpass.askpass(mask="")
-        print("passwor",self.password ) 
-        #TODO if UID exist in DB ask again the user of new UID
-        # if UID exist doesn't exist then return uid
-        return self.UID
+        while True:
+            self.UID = input("Enter your new user id: ")
+            self.userName = input("Enter your name: ")
+            self.password = maskpass.askpass(mask="")
+            print("passwor",self.password ) 
+            #TODO if UID exist in DB ask again the user of new UID
+            # if UID exist doesn't exist then return uid
+            checkUser = ('''
+                SELECT EXISTS(SELECT * FROM users WHERE uid = ?)''')
+            userExist = cursor.execute(checkUser,(self.UID))
+            userExist = userExist.fetchone()
+            if userExist[0]:
+                print("userlog in")
+                connection.commit()
+                return self.UID
+            else:
+                print("user does not exist")
+            return self.UID
     def logout(self,uid):
         # logout
         self.UID = None
@@ -143,7 +183,7 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                curr_id = user1.login()
+                curr_id = user1.login("U")
                 p = pages(curr_id)
                 print(curr_id)
                 p.home()
@@ -167,7 +207,7 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                uid = user1.login()
+                uid = user1.login("A")
                 p = pages()
                 p.home()
             elif  inp2  == "2":
@@ -178,81 +218,3 @@ def main():
             print("Invalid input")
             continue
 main()
-
-
-###############################
-# import sqlite3
-# import string
-
-# connection = None
-# cursor = None
-
-# def connect(path):
-#     global connection, cursor
-#     connection = sqlite3.connect(path)
-#     cursor = connection.cursor()
-#     cursor.execute(' PRAGMA forteign_keys=ON; ')
-#     connection.commit()
-#     return
-
-# def addSong(aid):
-#     global connection, cursor
-#     title, duaration = map(string, input("Please enter a title and duration in format(title, duration): ").split())
-#     checkSong = '''SQL exist in query '''
-#     songExist = cursor.execute(checkSong)
-#     songExist = cursor.fetchall()
-#     if (songExist):
-#         print("Song already exists in the database")
-#     else:
-#         print("continue to add a song")
-#         cursor.execute('''SQL add song query ''')
-#         cursor.commit()
-#         ##adding additional performers
-#     return
-
-# def topFans():
-#     global connection, cursor
-#     print("Top 3 Fans are:\n")
-#     cursor.execute('''SQL top 3 fans query''')
-#     all_entry = cursor.fetchall()
-#     for one_entry in all_entry:
-#         print(one_entry)
-#     return
-
-# def topPlaylist(aid):
-#     global connection, cursor
-#     print("Top 3 Playlists are:\n")
-#     cursor.execute('''SQL top 3 playlist query''')
-#     all_entry = cursor.fetchall()
-#     for one_entry in all_entry:
-#         print(one_entry)
-#     return
-
-# def artistAction(aid):
-#     print("Please select a number between 1 to 4 as desceibed below):\n ")
-#     print("1. Add a song \n2. Find top fans and playlists \n3. Log out \n4. Quit the program")
-#     cmd = int(input())
-#     if cmd == 1:
-#         addSong(aid)
-#         return 
-        
-#     elif cmd == 2:
-#         topFans(aid)
-#         topPlaylist(aid)
-#         return 
-    
-#     elif cmd == 3:
-#         logout()
-#         print("Logout Successful")
-#         return False, False
-
-#     elif cmd == 4:
-#         exit()
-#     else:
-#         print("Incorrect input.")
-    
-
-# def main():
-#     global connection, cursor
-#     path="./test.db"
-#     connect(path)
