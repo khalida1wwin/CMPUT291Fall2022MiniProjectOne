@@ -34,17 +34,35 @@ def session_start(session_id,uid,connection,cursor):
 def end_session(session_id,uid,connection,cursor):
     # checks for a valid and an active session id to successfully end an ongoing session,
     # and update the relevant data associated with a session of a user.
-    if session_id != None:
-        endDate = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
-        cursor.execute('UPDATE sessions SET end = ? WHERE uid=? AND sno =?;',(endDate,uid,session_id))
-        connection.commit()
-        print("Session ended successfully!")
-        session_id = None
-        return session_id
-    else:
+    checkSession = '''SELECT sno FROM sessions
+                    WHERE uid=:UID 
+                    AND end IS NULL;'''
+    cursor.execute(checkSession, {"UID":uid})
+    sessionExist = cursor.fetchall()
+    # print(sessionExist)
+    if len(sessionExist) == 0:
         print("You are trying to end a session which is not being utilized")
+    else:
+        endDate = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
+        session_id = int(sessionExist[0][0])
+        # print(session_id)
+        cursor.execute("UPDATE sessions SET end = ? WHERE uid = ? and sno = ?;",(endDate,uid,session_id))
+        connection.commit()
+        session_id = None
+        print("The session",session_id,"has been ended")
+        return session_id
+
+    # if session_id != None:
+    #     endDate = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
+    #     cursor.execute('UPDATE sessions SET end = ? WHERE uid=? AND sno =?;',(endDate,uid,session_id))
+    #     connection.commit()
+    #     print("Session ended successfully!")
+    #     session_id = None
+    #     return session_id
+    # else:
+    #     print("You are trying to end a session which is not being utilized")
     
-    return session_id
+    # return session_id
 		
 def searchSongs(session_id,uid,connection,cursor):
     
@@ -114,7 +132,8 @@ def searchSongs(session_id,uid,connection,cursor):
                     song_id = matchingsongs[int(useroption2)-1][0]
                     action = input("Would you like to access the songAction() menu? Press Y")
                     if action.upper() == 'Y':
-                        songactions.songAction(song_id,uid,connection,cursor)
+                        
+                        main.pages(uid,connection, cursor).songAction(song_id,uid,connection,cursor)
                     break
                 else:
                     song_id = matchingsongs[int(useroption)-1][0]

@@ -2,7 +2,7 @@ import sqlite3
 import string
 import main
 import userAction
-
+session_id = None
 def info(sid,uid,connection, cursor):
     # More information for a song is the names of artists who performed it 
     # in addition to id, title and duration of the song as well as the names of 
@@ -41,27 +41,29 @@ def listen(sid, uid,connection, cursor):
                     AND end IS NULL;'''
     cursor.execute(checkSession, {"UID":uid})
     sessionExist = cursor.fetchall()
-    print(sessionExist)
+    # print(sessionExist)
     if len(sessionExist) == 0:
         sno,Date = userAction.session_start(None,uid,connection, cursor) 
-        print("New sno created",sno)
+        main.pages(uid,connection, cursor).session_id = sno
+        print("New sno created ",sno)
         #Assumed that the session number is returned 
     else:
         sno = sessionExist[0][0]
-        print(sno)
-    checkSong = '''SELECT *
+        print("Session: ",sno)
+  
+    cursor.execute('''SELECT *
                     FROM listen 
                     WHERE uid = ?
                     AND sid = ?
-                    AND sno = ?)'''
-    cursor.execute(checkSong, (uid,sid,sno))
+                    AND sno = ?;''', (uid,sid,sno))
     songExist = cursor.fetchall()
     #You can assume the user cannot have more than one active session.
-    print(songExist[0])
-    
+    # print(songExist[0])
     # print(songExist[0])
     # if songExist!= 0:
-    if len(songExist)!=0:
+    # print(songExist)
+    # print(len(songExist))
+    if len(songExist) != 0:
         cursor.execute('''UPDATE listen 
                         SET cnt=cnt+1 
                         WHERE uid=? 
@@ -70,7 +72,7 @@ def listen(sid, uid,connection, cursor):
         connection.commit()
         print("Update compeleted!")
     else:
-        cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, 1)''', (uid,sid,sno))
+        cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, ?)''', (uid,sno,sid,1))
         connection.commit()
         print("Insert compeleted!")
     print("Listening to Song")
@@ -93,20 +95,36 @@ def addToPL(sid, uid,connection, cursor):
         cursor.execute('''SELECT MAX(sorder) 
                         FROM plinclude 
                         WHERE pid=:PID;''',{"PID":pid})
-        sorder = cursor.fetchall()[0][0] + 1
+
+        sorderOR = int(cursor.fetchone())+ 1
+        print(sorderOR)
+        print(sorderOR[0])
+        if sorderOR[0] != None:
+            sorder = int(sorderOR[0]) + 1
+        else:
+            sorder = 1
+        print(sorder)
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
         connection.commit()
     else:
         #New playlist
+        # print(cursor.fetchall())
+    
         cursor.execute('''SELECT MAX(pid) 
-                        FROM playlists
-                        WHERE uid=:UID;''',{"UID":uid})
-        pid = cursor.fetchall()[0][0] + 1
+                        FROM playlists;''')
+        maxPid = cursor.fetchone()
+        # print(maxPid)
+        # print(maxPid[0])
+        if maxPid[0] != None:
+            pid = int(maxPid[0]) + 1
+        else:
+            pid = 1
         newsorder = 1
         cursor.execute('''INSERT INTO playlists VALUES (?, ?, ?)''',(pid,playlist,uid))
         connection.commit()
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,newsorder))
         connection.commit()
+        print("Song added to playlist")
         songAction(sid,uid,connection, cursor)
     return
 

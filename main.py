@@ -149,7 +149,7 @@ class pages():
             exit()
 
     def StartSession(self):
-        self.session_id, startDate =userAction.session_start(self.session_id,self.uid,self.connection,self.cursor)
+        self.session_id, startDate = userAction.session_start(self.session_id,self.uid,self.connection,self.cursor)
         print("Session:",self.session_id)
         print("Session start date:",startDate)
         print("What do you want to do (select number)?")
@@ -182,8 +182,81 @@ class pages():
             self.logout()
         elif choice == "3":
             exit()
+    def songAction(self,sid, uid,connection, cursor):
+    # This function displays all action that can be performed on a song by a user and also provides option to go to user menu, logout or quit the program.
+        print("Please select a number between 1 to 6 as desceibed below):")
+        print('1. Listen to this song.')
+        print('2. More information.')
+        print('3. Add to playlist.')
+        print('4. Go to home page')
+        print('5. Logout')
+        print('6. Exit')
+        cmd = input()
+        if cmd == '1':
+            self.listen(sid,uid,connection, cursor) 
+            return
+        elif cmd == '2':
+            print("info")
+            self.info(sid,uid,connection, cursor)
+            return
+        elif cmd == '3':
+            self.addToPL(sid,uid,connection, cursor)
+            return
+        elif cmd == '4':
+            # p = pages(uid,connection, cursor)
+            p.home()
+            return
+        elif cmd == '5':
+            logout(uid)
+            return
+        elif cmd == '6':
+            exit()
+    def listen(sid, uid,connection, cursor):
+    #This function updates the listen count if a song is already listened to in a session. It inserts
+    # a listen event to the session if the song is not listened to in the session. It creates a new session, if there is no existing one.
+        checkSession = '''SELECT sno FROM sessions
+                        WHERE uid=:UID 
+                        AND end IS NULL;'''
+        cursor.execute(checkSession, {"UID":uid})
+        sessionExist = cursor.fetchall()
+        print(sessionExist)
+        if len(sessionExist) == 0:
+            self.session_id,Date = userAction.session_start(None,uid,connection, cursor) 
+            print("New sno created",sno)
+            #Assumed that the session number is returned 
+        else:
+            sno = sessionExist[0][0]
+            print(sno)
+    
+        cursor.execute('''SELECT *
+                        FROM listen 
+                        WHERE uid = ?
+                        AND sid = ?
+                        AND sno = ?;''', (uid,sid,sno))
+        songExist = cursor.fetchall()
+        #You can assume the user cannot have more than one active session.
+        # print(songExist[0])
+        # print(songExist[0])
+        # if songExist!= 0:
+        print(songExist)
+        print(len(songExist))
+        if len(songExist) != 0:
+            cursor.execute('''UPDATE listen 
+                            SET cnt=cnt+1 
+                            WHERE uid=? 
+                            AND sid=? 
+                            AND sno=?''', (uid,sid,sno))
+            connection.commit()
+            print("Update compeleted!")
+        else:
+            cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, ?)''', (uid,sno,sid,1))
+            connection.commit()
+            print("Insert compeleted!")
+        print("Listening to Song")
+        self.songAction(sid,uid,connection, cursor)
+        return
     def logout(self):
-        userAction.end_session(self.session_id)
+        self.session_id = userAction.end_session(self.session_id)
         self.uid = None
 
 
@@ -252,5 +325,6 @@ def logout(uid):
     # logout
     global curr_id
     curr_id = None
+
 
 
