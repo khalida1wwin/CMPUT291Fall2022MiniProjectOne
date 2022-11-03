@@ -106,7 +106,7 @@ class pages():
         elif choice == "6":
             exit()
     def searchSongsAndPlaylists(self):
-        userAction.searchSongs(self.session_id,self.uid,connection,cursor)
+        userAction.searchSongs(self.session_id,self.uid,self.connection,self.cursor)
         # print("=> search results : (playlist name or song name)")
         # print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
         print("What do you what to do (select number)?")
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
     cursor.execute(' PRAGMA forteign_keys=ON; ')
-    connection.commit()
+    connection.commit(),connection, cursor
     curr_id = None
     while True:
         

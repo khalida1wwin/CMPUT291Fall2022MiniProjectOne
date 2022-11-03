@@ -37,35 +37,44 @@ def listen(sid, uid,connection, cursor):
     #This function updates the listen count if a song is already listened to in a session. It inserts
     # a listen event to the session if the song is not listened to in the session. It creates a new session, if there is no existing one.
     checkSession = '''SELECT sno FROM sessions
-                    WHERE uid=:SID 
+                    WHERE uid=:UID 
                     AND end IS NULL;'''
-    cursor.execute(checkSession, {"SID":sid})
+    cursor.execute(checkSession, {"UID":uid})
     sessionExist = cursor.fetchone()
-    if(sessionExist)==0:
-        sno = userAction.session_start(uid,connection, cursor) 
+    print(sessionExist)
+    if not (sessionExist):
+        sno,Date = userAction.session_start(None,uid,connection, cursor) 
+        print("New sno created",sno)
         #Assumed that the session number is returned 
     else:
-        sno = checkSession[0]
-        checkSong = '''SELECT *
-                       FROM listen 
-                       WHERE uid LIKE ?
-                       AND sid = ?
-                       AND sno = ?'''
-        cursor.execute(checkSong, (uid,sid,sno))
-        songExist = cursor.fetchone()
-        #You can assume the user cannot have more than one active session.
-        if songExist!=0:
-            cursor.execute= ('''UPDATE listen 
-                            SET cnt=cnt+1 
-                            WHERE uid=? 
-                            AND sid=? 
-                            AND sno=?''', (uid,sid,sno))
-            connection.commit()
-        else:
-            cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, 1)''', (uid,sid,sno))
-            connection.commit()
+        sno = sessionExist[0]
+        print(sno)
+    checkSong = '''SELECT EXISTS(SELECT *
+                    FROM listen 
+                    WHERE uid = ?
+                    AND sid = ?
+                    AND sno = ?)'''
+    songExist = cursor.execute(checkSong, (uid,sid,sno))
+    songExist = cursor.fetchone()
+    #You can assume the user cannot have more than one active session.
+    print(songExist[0])
+    
+    # print(songExist[0])
+    # if songExist!= 0:
+    if songExist[0]:
+        cursor.execute('''UPDATE listen 
+                        SET cnt=cnt+1 
+                        WHERE uid=? 
+                        AND sid=? 
+                        AND sno=?''', (uid,sid,sno))
+        connection.commit()
+        print("Update compeleted!")
+    else:
+        cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, 1)''', (uid,sid,sno))
+        connection.commit()
+        print("Insert compeleted!")
     print("Listening to Song")
-    songAction(sid,uid)
+    songAction(sid,uid,connection, cursor)
     return
 
 def addToPL(sid, uid,connection, cursor):
@@ -90,11 +99,11 @@ def addToPL(sid, uid,connection, cursor):
     else:
         #New playlist
         cursor.execute('''SELECT MAX(pid) 
-                        FROM playlist
+                        FROM playlists
                         WHERE uid=:UID;''',{"UID":uid})
         pid = cursor.fetchall()[0][0] + 1
         newsorder = 1
-        cursor.execute('''INSERT INTO playlist VALUES (?, ?, ?)''',(pid,playlist,uid))
+        cursor.execute('''INSERT INTO playlists VALUES (?, ?, ?)''',(pid,playlist,uid))
         connection.commit()
         cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,newsorder))
         connection.commit()
@@ -123,7 +132,7 @@ def songAction(sid, uid,connection, cursor):
         return
     elif cmd == '4':
         p = main.pages(uid,connection, cursor)
-        p.home(uid)
+        p.home()
         return
     elif cmd == '5':
         main.logout(uid)
