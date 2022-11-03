@@ -169,7 +169,7 @@ def main():
                 user1 = user()
                 uid = user1.login()
                 p = pages()
-                p.home(uid)
+                p.home()
             elif  inp2  == "2":
                 print("Exit")
                 break
@@ -177,7 +177,6 @@ def main():
         else:
             print("Invalid input")
             continue
-
 main()
 
 
