@@ -49,20 +49,25 @@ class user():
             self.UID = input("Enter your new user id: ")
             self.userName = input("Enter your name: ")
             self.password = maskpass.askpass(mask="")
-            print("passwor",self.password ) 
+            # print("password",self.password ) 
             #TODO if UID exist in DB ask again the user of new UID
             # if UID exist doesn't exist then return uid
             checkUser = ('''
-                SELECT EXISTS(SELECT * FROM users WHERE uid = ?)''')
-            userExist = cursor.execute(checkUser,(self.UID))
+                SELECT EXISTS(SELECT * FROM users WHERE uid=:newUID)''')
+            userExist = cursor.execute(checkUser,{"newUID":self.UID})
             userExist = userExist.fetchone()
             if userExist[0]:
                 print("userlog in")
                 connection.commit()
-                return self.UID
+                print("please try new user id")
+                # return self.UID
             else:
-                print("user does not exist")
-            return self.UID
+                newUser = ('''
+                INSERT INTO users(uid,name,pwd) VALUES(?,?,?)''')
+                cursor.execute(newUser,(self.UID,self.userName,self.password))
+                connection.commit()
+                print("successful sign up")
+                return self.UID
     def logout(self,uid):
         # logout
         self.UID = None
@@ -156,7 +161,7 @@ class pages():
         pass
     def logout(self):
         self.uid = None
-        exit()
+
 
 def main():
     path="./mini.db"
