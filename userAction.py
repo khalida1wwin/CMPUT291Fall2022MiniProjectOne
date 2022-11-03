@@ -210,7 +210,7 @@ def searchPlaylists(session_id,uid,connection,cursor):
 def playlistsDesc(playlist_id,uid,connection,cursor):
     #the playlist description function is called when the user chooses to view the list of songs 
     # from a playlist 
-    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = {0} AND p.uid = {1} AND p.pid = pl.pid AND pl.sid = s.sid; ".format(playlist_id,uid)
+    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = ? AND p.uid = ? AND p.pid = pl.pid AND pl.sid = s.sid; ",(playlist_id,uid)
     cursor.execute(playlistsongquery)
     plsongs = cursor.fetchall()
     print("The Songs of your Playlist are: ")
@@ -310,7 +310,7 @@ def searchArtists(session_id,uid,connection,cursor):
 
 
 def artistsDesc(artist_id,uid,connection,cursor):
-    artistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, artists a, perform p WHERE a.aid = {} AND p.aid = a.aid AND p.sid = s.sid; ".format(artist_id)
+    artistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, artists a, perform p WHERE a.aid = ? AND p.aid = a.aid AND p.sid = s.sid; ",(artist_id)
     cursor.execute(artistsongquery)
     artsongs = cursor.fetchall()
     print("The Songs of your Artist are: ")
