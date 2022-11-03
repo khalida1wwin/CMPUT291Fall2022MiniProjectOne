@@ -46,12 +46,87 @@ def end_session(connection,cursor,session_id,uid):
 def searchSongs(connection,cursor,session_id,uid):
     
     #takes the user keyword or a bunch of user keywords.
-    userkeywords = input("please enter your keywords to find matching songs/playlists: ").split()
+    userkeywords = input("please enter your keywords to find matching songs: ").split()
+    if len(userkeywords) == 0:
+        print("please enter a valid keyword/ keywords.")
+        return
+    # the entire song query is broken into chunks of the overall query.
+    # The songquery variable aims to display at the most top 5 matches in response 
+    # to keyword entry 
+    songquery = "SELECT DISTINCT s.sid, s.title, s.duration FROM songs s"
+    index = 0
+    for word in userkeywords:
+	    if index == 0:
+	        songquery += " AND (s.title LIKE '%{}%' )".format(word)
+        else:
+	        songquery += " OR (s.title LIKE '%{}%' )".format(word)
+        index += 1
+    songquery += " ORDER BY ("
+    for word in userkeywords:
+        songquery += "CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
+    songquery.rstrip("+ ")
+    songquery += ") DESC;"
+
+    if sqlite3.complete_statement(songquery):
+        cursor.execute(songquery)
+        matchingsongs = cursor.fetchall()
+
+        if len(matchingsongs) == 0:
+            print("No matching songs found!")
+            return
+        elif len(matchingsongs) <= 5:
+            for i in range(len(matchingsongs)):
+                print("Song ",i+1,matchingsongs[i])
+                while True:
+                    useroption = input("Select a song or press enter ")
+                    if useroption.isnumeric():
+                        break
+                    song_id = matchingsongs[useroption -1][0]
+                    action = input("Please enter a song action to perform: 1 action a 2 actiob b...")
+                    if action.upper() == 1:
+                        addSong(song_id)
+                    # if action == 2:
+                        #
+        else:
+            for i in range(len(matchingsongs)):
+                if i > 5:
+                    while True:
+                        userpotion = input('Select a song or press enter to see more matches:  ')
+                        if  len(useroption) == 0 or userpotion.isnumeric():
+                            break
+                    if len(useroption) == 0:
+                        for k in range(5, len(matchingsongs)):
+                            print("Song ",k+1, matchingsongs[k])
+                        while True:
+							useroption2 = input("Please Select a song: ")
+							if useroption2.isnumeric():
+								break
+						song_id = matchingsongs[useroption2-1][0]
+                        action = input("Would you like to access the songAction() menu? Press Y")
+                        if action.upper() == 'Y':
+                            songAction(song_id,uid)
+					    break
+					else:
+						song_id = matchingsongs[useroption-1][0]
+                        action = input("Would you like to access the songAction() menu? Press Y")
+                        if action == 'Y':
+                            songAction(song_id,uid)
+					    break
+				print(i+1, matchingsongs[i])
+    else:
+		print("The query failed to fetch data")
+
+
+
+def searchPlaylists(connection,cursor,session_id,uid):
+    
+    #takes the user keyword or a bunch of user keywords.
+    userkeywords = input("please enter your keywords to find matching playlists: ").split()
     if len(userkeywords) == 0:
         print("please enter a valid keyword/ keywords.")
         return
 
-    songquery = "SELECT DISTINCT s.sid, s.title, s.duration FROM songs s"
+    songquery = "SELECT DISTINCT p.pid, s.title, s.duration FROM songs s"
     index = 0
     for word in userkeywords:
 	    if index == 0:
@@ -118,9 +193,10 @@ def searchSongs(connection,cursor,session_id,uid):
 
 
 
-
     
 
+
+		
 
 
 
