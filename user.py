@@ -54,10 +54,10 @@ def searchSongs(connection,cursor,session_id,uid):
     songquery = "SELECT DISTINCT s.sid, s.title, s.duration FROM songs s"
     index = 0
     for word in userkeywords:
-	    if index == 0:
-	        songquery += " AND (s.title LIKE '%{}%' )".format(word)
+        if index == 0:
+            songquery += " AND (s.title LIKE '%{}%' )".format(word)
         else:
-	        songquery += " OR (s.title LIKE '%{}%' )".format(word)
+            songquery += " OR (s.title LIKE '%{}%' )".format(word)
         index += 1
     songquery += " ORDER BY ("
     for word in userkeywords:
@@ -96,10 +96,10 @@ def searchSongs(connection,cursor,session_id,uid):
                         for k in range(5, len(matchingsongs)):
                             print("Song ",k+1, matchingsongs[k])
                         while True:
-							useroption2 = input("Please Select a song: ")
-							if useroption2.isnumeric():
-								break
-						song_id = matchingsongs[useroption2-1][0]
+                            useroption2 = input("Please Select a song: ")
+                            if useroption2.isnumeric():
+                                break
+						# song_id = matchingsongs[useroption2-1][0]
                         action = input("Would you like to access the songAction() menu? Press Y")
                         if action == 'Y':
                             songAction(song_id,uid)
