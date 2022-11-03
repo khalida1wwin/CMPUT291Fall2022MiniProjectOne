@@ -16,18 +16,17 @@ def addSong(aid):
     global connection, cursor
     title= map(string, input("Enter the song title: "))
     while title:
+    #loops till a positive integer is entered after the title is entered
         try:
             duration = int(input("Enter the song duration: "))
-        except ValueError:
-            print("Error! Please input a positive number.")
-            continue
-        if duration <= 0:
+            assert duration > 0
+        except AssertionError:
             print("Error! Please input a positive number.")
             continue
         break
-    artists = list(map(str, input("Enter the ids of additional artists (separated by space): ").split()))
+    artists = list(map(str, input("Enter the ids of additional artists (separated by space). If none, enter space: ").split()))
     if aid not in artists:
-        artists.append(aid)
+        artists.append(aid) #Adding the current artist aid to the list of all artist performing the song
         
     cursor.execute('''SELECT aid FROM artists''')
     artist_aid= cursor.fetchall()
