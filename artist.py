@@ -1,22 +1,22 @@
 import sqlite3
 import string
 
-connection = None
-cursor = None
+# connection = None
+# cursor = None
 # Add comments later, Check if query works, check if the inputs are same 
-def connect(path):
-    #remove this
-    global connection, cursor
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(' PRAGMA forteign_keys=ON; ')
-    connection.commit()
-    return
+# def connect(path):
+#     #remove this
+#     global connection, cursor
+#     connection = sqlite3.connect(path)
+#     cursor = connection.cursor()
+#     cursor.execute(' PRAGMA forteign_keys=ON; ')
+#     connection.commit()
+#     return
 
-def addSong(aid):
+def addSong(aid,connection, cursor):
     # The artists adds a song to the database by providing a title, a duration and the performing artist and adding a unique song id to it.
     # It also prevents adding duplicate songs with same name and duration. 
-    global connection, cursor
+
     title= map(string, input("Enter the song title: "))
     while title:
     #loops till a positive integer is entered after the title is entered
@@ -68,9 +68,9 @@ def addSong(aid):
     artistAction(aid) #Going back to artist action
     return
 
-def topFans(aid):
+def topFans(aid,connection, cursor):
     # This function finds the top 3 users who listen to this artist's songs (aid taken) the longest time
-    global connection, cursor
+
     print("Top 3 Fans are:\n")
     cursor.execute('''SELECT u.uid, u.name, SUM(l.cnt * s.duration) 
                     FROM listen l, perform p, user u, songs s, artists a
@@ -87,9 +87,9 @@ def topFans(aid):
         print(one_entry)
     return
 
-def topPlaylist(aid):
+def topPlaylist(aid,connection, cursor):
     #This function finds the top 3 playlist that has the largest number of songs of this artist(aid taken).
-    global connection, cursor
+
     print("Top 3 Playlists are:\n")
     cursor.execute('''SELECT pli.pid, pl.title, COUNT(*)
                     FROM perform p, plinclude pli, playlists pl
@@ -104,18 +104,18 @@ def topPlaylist(aid):
         print(one_entry)
     return
 
-def artistAction(aid):
+def artistAction(aid,connection, cursor):
     # This function displays all action that can be performed on a song by a artist and also provides option to logout or quit the program.
     print("Please select a number between 1 to 4 as desceibed below):\n ")
     print("1. Add a song \n2. Find top fans and playlists \n3. Log out \n4. Quit the program")
     cmd = int(input())
     if cmd == 1:
-        addSong(aid)
+        addSong(aid,connection, cursor)
         return 
         
     elif cmd == 2:
-        topFans(aid)
-        topPlaylist(aid)
+        topFans(aid,connection, cursor)
+        topPlaylist(aid,connection, cursor)
         return 
     
     elif cmd == 3:
@@ -130,7 +130,7 @@ def artistAction(aid):
     return
     
 
-def main():
-    global connection, cursor
-    path="./test.db"
-    connect(path)
+# def main():
+#     global connection, cursor
+#     path="./test.db"
+#     connect(path)

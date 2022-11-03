@@ -215,7 +215,7 @@ if __name__ == "__main__":
                 curr_id = user1.login("A")
                 p = pages(curr_id)
 
-                artist.artistAction(curr_id)
+                artist.artistAction(curr_id,connection, cursor)
 
             elif  inp2  == "2":
                 print("Exit")
