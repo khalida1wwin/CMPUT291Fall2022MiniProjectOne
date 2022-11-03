@@ -23,9 +23,12 @@ class user():
         #TODO if UID exist in DB ask again the user of new UID
         # if UID exist doesn't exist then return uid
         return self.UID
-    def logout(self):
+    def logout(self,uid):
         # logout
-        pass
+        self.UID = None
+        self.password = None
+        exit()
+
 class pages():
     def __init__(self,uid):
         self.uid = uid
@@ -44,7 +47,7 @@ class pages():
         elif choice == "2":
             self.searchSongsAndPlaylists()
         elif choice == "3":
-            self.playlist()
+            self.SearchForArtists()
         elif choice == "4":
             self.setting()
         elif choice == "5":
@@ -52,15 +55,68 @@ class pages():
         elif choice == "6":
             exit()
     def searchSongsAndPlaylists(self):
-        pass
-    def Searchplaylist(self):
-        pass
+        earch = input("What do you want to search for? (seprate keywords with comma)")
+        print("=> search results : (playlist name or song name)")
+        print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
+        print("What do you what to do (select number)?")
+        print("1. See more search result")
+        print("2. Enter the result no")
+        print("3. Go to home page")
+        print("4. Log Out")
+        print("5. Exit")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            self.moreSearchResult()
+        elif choice == "2":
+            self.SelectResult()
+        elif choice == "3":
+            self.home()
+        elif choice == "4":
+            self.logout()
+        elif choice == "5":
+            exit()
+    def SearchForArtists(self):
+        search = input("What do you want to search for? (seprate keywords with comma)")
+        print("=> search results : (playlist name or song name)")
+        print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
+        print("What do you what to do (select number)?")
+        print("1. See more search result")
+        print("2. Select result")
+        print("3. Go to home page")
+        print("4. Log Out")
+        print("5. Exit")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            self.moreSearchResult()
+        elif choice == "2":
+            self.SelectResult()
+        elif choice == "3":
+            self.home()
+        elif choice == "4":
+            self.logout()
+        elif choice == "5":
+            exit()
     def StartSession(self):
+        print("Session #:")
+        print("Session start date: xx/x/xxxx")
+        print("What do you want to do (select number)?")
+        print("1. Go to home page")
+        print("2. Log Out")
+        print("3. Exit ")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            self.home()
+        elif choice == "2":
+            self.logout()
+        elif choice == "3":
+            exit()
+    def moreSearchResult(self):
         pass
-    def setting(self):
+    def SelectResult(self):
         pass
     def logout(self):
-        pass
+        self.uid = None
+        exit()
 
 def main():
     path="./mini.db"
@@ -72,6 +128,7 @@ def main():
 
 
     while True:
+        curr_id = None
         print("Welcome to the songs App!")
         inp1  = input("Are you an artists(a) or user(u): ")
         # print(inp)
@@ -86,16 +143,16 @@ def main():
                 print("Log in")
                 # login
                 user1 = user()
-                uid = user1.login()
-                p = pages()
-                print(uid)
-                p.home(uid)
+                curr_id = user1.login()
+                p = pages(curr_id)
+                print(curr_id)
+                p.home()
             elif  inp2  == "2":
                 print("Sign up")
                 # signup
                 user1 = user()
-                user1.signup()
-                p = pages()
+                curr_id = user1.signup()
+                p = pages(curr_id)
                 p.home()
             elif  inp2  == "3":
                 print("Exit")
