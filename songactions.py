@@ -111,8 +111,8 @@ def songAction(sid, uid):
     print('2. More information.\n')
     print('3. Add to playlist.\n')
     print('4. Menu\n')
-    print('5.Logout\n')
-    print('6.Exit\n')
+    print('5. Logout\n')
+    print('6. Exit\n')
     cmd = int(input())
     if cmd == '1':
         listen(sid,uid) 
