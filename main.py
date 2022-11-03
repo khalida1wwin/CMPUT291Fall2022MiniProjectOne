@@ -72,7 +72,7 @@ class user():
         # logout
         self.UID = None
         self.password = None
-        exit()
+        # exit()
 
 class pages():
     def __init__(self,uid):
