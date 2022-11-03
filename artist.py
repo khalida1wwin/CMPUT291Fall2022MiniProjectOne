@@ -14,22 +14,22 @@ def connect(path):
 
 def addSong(aid):
     global connection, cursor
-    title= map(string, input("Please enter a title: "))
+    title= map(string, input("Enter the song title: "))
     while title:
         try:
-            duration = int(input("Input song duration: "))
+            duration = int(input("Enter the song duration: "))
         except ValueError:
-            print("Please input a positive integer.")
+            print("Error! Please input a positive number.")
             continue
         if duration <= 0:
-            print("Please input a positive integer.")
+            print("Error! Please input a positive number.")
             continue
         break
-    artists = list(map(str, input("Enter additional artists: ").split()))
+    artists = list(map(str, input("Enter the ids of additional artists (separated by space): ").split()))
     if aid not in artists:
         artists.append(aid)
         
-    cursor.execute('SELECT aid FROM artists')
+    cursor.execute('''SELECT aid FROM artists''')
     artist_aid= cursor.fetchall()
     for i in artists:
         if i not in artist_aid:
@@ -37,17 +37,17 @@ def addSong(aid):
             addSong(aid)
             return
 
-    checkSong = '''SELECT * 
+    checkSong = ('''SELECT * 
                   FROM songs s
                   WHERE s.title LIKE ?
-                  AND s.duration = ?'''
+                  AND s.duration = ?''')
     songExist = cursor.execute(checkSong, (title, duration))
     songExist = cursor.fetchone()
     cursor.execute('''SELECT MAX(s.sid) 
                     FROM songs s;''')
     newsid = cursor.fetchall()[0][0] + 1
     if (songExist):
-        print("Song already exists in the database")
+        print("This song already exists in the database")
         artistAction(aid)
     else:
         print("continue to add a song")
@@ -82,7 +82,7 @@ def topFans(aid):
 def topPlaylist(aid):
     global connection, cursor
     print("Top 3 Playlists are:\n")
-    cursor.execute('''SELECT DISTINCT pli.pid, pli.title, COUNT(*)
+    cursor.execute('''SELECT pli.pid, pli.title, COUNT(*)
                     FROM perform p, plinclude pli, playlists pl
                     WHERE p.aid = ?
                     AND p.sid = pli.sid
