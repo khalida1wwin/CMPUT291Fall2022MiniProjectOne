@@ -67,8 +67,11 @@ def listen(sid, uid):
     print("Listening to Song")
     songAction(sid,uid)
     return
+
 def addToPL(sid, uid):
-    playlist = input("Enter the name of the plylist you wan to add to")
+    #Can have same song multiple time in the playlist
+    playlist = input("Enter the name of the plylist you wan to add to") 
+    print("It will create a newplaylist of it doesn't exist or will add to the given playlist name")
     # Forum: Yes, sid and pid are keys for songs and playlists but the titles can be the same.
     checkSong = '''SELECT pid FROM playlists
                     WHERE title LIKE ? 
@@ -81,9 +84,21 @@ def addToPL(sid, uid):
                         FROM plinclude 
                         WHERE pid= ?;''',pid)
         sorder = cursor.fetchall()[0][0] + 1
-        
-
+        cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
+        connection.commit()
+    else:
+        #New playlist
+        cursor.execute('''SELECT MAX(pid) 
+                        FROM playlist
+                        WHERE uid= ?;''',uid)
+        pid = cursor.fetchall()[0][0] + 1
+        newsorder = 1
+        cursor.execute('''INSERT INTO playlist VALUES (?, ?, ?)''',(pid,playlist,uid))
+        connection.commit()
+        cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,newsorder))
+        connection.commit()
     return
+
 def songAction(sid, uid):
     print("Please select a number between 1 to 6 as desceibed below):\n ")
     print('1. Listen to this song.\n')
