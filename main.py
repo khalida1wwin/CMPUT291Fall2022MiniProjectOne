@@ -1,5 +1,6 @@
 import maskpass 
 import sqlite3
+import artist
 class user():
     def __init__(self):
         pass
@@ -163,14 +164,13 @@ class pages():
         self.uid = None
 
 
-def main():
+if __name__ == "__main__":
     path="./mini.db"
     global connection, cursor
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
     cursor.execute(' PRAGMA forteign_keys=ON; ')
     connection.commit()
-
 
     while True:
         curr_id = None
@@ -214,7 +214,9 @@ def main():
                 user1 = user()
                 curr_id = user1.login("A")
                 p = pages(curr_id)
-                p.home()
+
+                artist.artistAction(curr_id)
+
             elif  inp2  == "2":
                 print("Exit")
                 break
@@ -222,4 +224,4 @@ def main():
         else:
             print("Invalid input")
             continue
-main()
+
