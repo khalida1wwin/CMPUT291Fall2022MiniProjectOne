@@ -3,7 +3,7 @@ import string
 
 connection = None
 cursor = None
-
+# Add comments later, Check if query works, check if the inputs are same 
 def connect(path):
     global connection, cursor
     connection = sqlite3.connect(path)
@@ -14,23 +14,66 @@ def connect(path):
 
 def addSong(aid):
     global connection, cursor
-    title, duaration = map(string, input("Please enter a title and duration in format(title, duration): ").split())
-    checkSong = '''SQL exist in query '''
-    songExist = cursor.execute(checkSong)
-    songExist = cursor.fetchall()
+    title= map(string, input("Please enter a title: "))
+    while title:
+        try:
+            duration = int(input("Input song duration: "))
+        except ValueError:
+            print("Please input a positive integer.")
+            continue
+        if duration <= 0:
+            print("Please input a positive integer.")
+            continue
+        break
+    artists = list(map(str, input("Enter additional artists: ").split()))
+    if aid not in artists:
+        artists.append(aid)
+        
+    cursor.execute('SELECT aid FROM artists')
+    artist_aid= cursor.fetchall()
+    for i in artists:
+        if i not in artist_aid:
+            print("Error! The artist aid" + i + "does not exist")
+            addSong(aid)
+            return
+
+    checkSong = '''SELECT * 
+                  FROM songs s
+                  WHERE s.title LIKE ?
+                  AND s.duration = ?'''
+    songExist = cursor.execute(checkSong, (title, duration))
+    songExist = cursor.fetchone()
+    cursor.execute('''SELECT MAX(s.sid) 
+                    FROM songs s;''')
+    newsid = cursor.fetchall()[0][0] + 1
     if (songExist):
         print("Song already exists in the database")
+        artistAction(aid)
     else:
         print("continue to add a song")
-        cursor.execute('''SQL add song query ''')
+        cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
         cursor.commit()
-        ##adding additional performers
+    
+    for i in artists:
+        cursor.execute('INSERT INTO perform VALUES(?, ?)', (i, newsid))
+        connection.commit()
+    ##adding additional performers
+    
     return
 
-def topFans():
+def topFans(aid):
     global connection, cursor
     print("Top 3 Fans are:\n")
-    cursor.execute('''SQL top 3 fans query''')
+    cursor.execute('''SELECT u.name, SUM(l.cnt * s.duration) 
+                    FROM listen l, perform p, user u, songs s, artists a
+                    WHERE p.aid= ?
+                    AND l.sid = s.sid 
+                    AND s.sid = p.sid
+                    AND p.aid = a.aid
+                    AND l.uid = u.uid
+                    GROUP BY l.uid, p.aid
+                    ORDER BY SUM(l.cnt * s.duration) DESC
+                    LIMIT 3;''', aid)
     all_entry = cursor.fetchall()
     for one_entry in all_entry:
         print(one_entry)
@@ -39,7 +82,14 @@ def topFans():
 def topPlaylist(aid):
     global connection, cursor
     print("Top 3 Playlists are:\n")
-    cursor.execute('''SQL top 3 playlist query''')
+    cursor.execute('''SELECT DISTINCT pli.pid, pli.title, COUNT(*)
+                    FROM perform p, plinclude pli, playlists pl
+                    WHERE p.aid = ?
+                    AND p.sid = pli.sid
+                    AND pl.pid = pli.pid
+                    GROUP BY pli.pid
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 3''',aid)
     all_entry = cursor.fetchall()
     for one_entry in all_entry:
         print(one_entry)
