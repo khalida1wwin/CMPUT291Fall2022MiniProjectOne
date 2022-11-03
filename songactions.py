@@ -40,28 +40,28 @@ def listen(sid, uid,connection, cursor):
                     WHERE uid=:UID 
                     AND end IS NULL;'''
     cursor.execute(checkSession, {"UID":uid})
-    sessionExist = cursor.fetchone()
+    sessionExist = cursor.fetchall()
     print(sessionExist)
-    if not (sessionExist):
+    if len(sessionExist) == 0:
         sno,Date = userAction.session_start(None,uid,connection, cursor) 
         print("New sno created",sno)
         #Assumed that the session number is returned 
     else:
-        sno = sessionExist[0]
+        sno = sessionExist[0][0]
         print(sno)
-    checkSong = '''SELECT EXISTS(SELECT *
+    checkSong = '''SELECT *
                     FROM listen 
                     WHERE uid = ?
                     AND sid = ?
                     AND sno = ?)'''
-    songExist = cursor.execute(checkSong, (uid,sid,sno))
-    songExist = cursor.fetchone()
+    cursor.execute(checkSong, (uid,sid,sno))
+    songExist = cursor.fetchall()
     #You can assume the user cannot have more than one active session.
     print(songExist[0])
     
     # print(songExist[0])
     # if songExist!= 0:
-    if songExist[0]:
+    if len(songExist)!=0:
         cursor.execute('''UPDATE listen 
                         SET cnt=cnt+1 
                         WHERE uid=? 
