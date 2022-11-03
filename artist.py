@@ -27,19 +27,6 @@ def addSong(aid):
             #Error if a negative no. or 0 is entered
             continue
         break
-    artists = list(map(str, input("Enter the ids of artists (separated by space) performing this song. If none, enter space: ").split()))
-    if aid not in artists: #if user forgets to input their aid to add to the artists
-        artists.append(aid) #Adding the current artist aid to the list of all artist performing the song
-        
-    cursor.execute('''SELECT aid FROM artists''') 
-    artist_aid= cursor.fetchall() 
-    for i in artists:
-        if i not in artist_aid:
-            # to check if all the entered aids are there in database
-            print("Error! The artist aid" + i + "does not exist")
-            addSong(aid) #Going back to add song again
-            return
-
     checkSong = ('''SELECT * 
                   FROM songs s
                   WHERE s.title LIKE ?
@@ -57,6 +44,21 @@ def addSong(aid):
         print("Adding the song")
         cursor.execute('''INSERT INTO songs VALUES(?, ?, ?)''', (newsid, title, duration))
         cursor.commit()
+
+    artists = list(map(str, input("Enter the ids of artists (separated by space) performing this song. ").split()))
+    if aid not in artists: #if user forgets to input their aid to add to the artists
+        artists.append(aid) #Adding the current artist aid to the list of all artist performing the song
+        
+    cursor.execute('''SELECT aid FROM artists''') 
+    artist_aid= cursor.fetchall() 
+    for i in artists:
+        if i not in artist_aid:
+            # to check if all the entered aids are there in database
+            print("Error! The artist aid" + i + "does not exist")
+            addSong(aid) #Going back to add song again
+            return
+
+    
     print("Adding all the performers of the song")
     for i in artists:
         cursor.execute('INSERT INTO perform VALUES(?, ?)', (i, newsid))
@@ -124,6 +126,7 @@ def artistAction(aid):
         exit()
     else:
         print("Incorrect input.")
+    return
     
 
 def main():
