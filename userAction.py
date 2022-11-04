@@ -85,33 +85,14 @@ def searchSongs(session_id,uid,connection,cursor):
             else:
                 songquery += " OR (s.title LIKE '%{}%' )".format(word)
             index += 1
-    songquery += " ORDER BY C as("
+    songquery += " ORDER BY ("
     for word in userkeywords:
         songquery += "CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
     songquery = songquery.rstrip("+ ")
-    songquery += ") DESC "
+    songquery += ") DESC;"
 
-    playlistquery = "SELECT DISTINCT p.pid, p.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = pl.pid AND pl.sid = s.sid"
-    index = 0
-    for word in userkeywords:
-            
-            if index == 0:
-                playlistquery += " AND (p.title LIKE '%{}%' )".format(word)
-            else:
-                playlistquery += " OR (p.title LIKE '%{}%' )".format(word)
-            index += 1
-    playlistquery += " ORDER BY ("
-    for word in userkeywords:
-        playlistquery += "CASE WHEN p.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
-    playlistquery = playlistquery.rstrip("+ ")
-    playlistquery += ") DESC "
-
-    songAndPlaylist = songquery + " UNION " +playlistquery + ";"
-    print(songquery)
-    print(playlistquery)
-    print(songAndPlaylist)
-    cursor.execute(songAndPlaylist)
-    
+    # print(songquery)
+    cursor.execute(songquery)
     matchingsongs = cursor.fetchall()
 
     if len(matchingsongs) == 0:
@@ -161,13 +142,8 @@ def searchSongs(session_id,uid,connection,cursor):
                         songactions.songAction(song_id,uid,connection,cursor)
                     break
             print(i+1, matchingsongs[i])
-    
 
-
-
-
-
-    
+ 
 def searchPlaylists(session_id,uid,connection,cursor):
     
     #takes the user keyword or a bunch of user keywords.
@@ -178,7 +154,7 @@ def searchPlaylists(session_id,uid,connection,cursor):
     # the entire playlist query is broken into chunks of the overall query.
     # The playlistquery variable aims to display at the most top 5 matches in response 
     # to keyword entry 
-    playlistquery = "SELECT DISTINCT p.pid, p.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = pl.pid AND pl.sid = s.sid"
+    playlistquery = "SELECT DISTINCT p.pid, p.title, SUM(s.duration) FROM songs s, playlists p, plinclude pl WHERE p.pid = pl.pid AND pl.sid = s.sid "
     index = 0
     for word in userkeywords:
             
@@ -187,7 +163,7 @@ def searchPlaylists(session_id,uid,connection,cursor):
             else:
                 playlistquery += " OR (p.title LIKE '%{}%' )".format(word)
             index += 1
-    playlistquery += " ORDER BY ("
+    playlistquery += " GROUP BY p.pid ORDER BY ("
     for word in userkeywords:
         playlistquery += "CASE WHEN p.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
     playlistquery = playlistquery.rstrip("+ ")
@@ -196,6 +172,7 @@ def searchPlaylists(session_id,uid,connection,cursor):
     # the following lines of code execute the SQL search on the data base provided
     cursor.execute(playlistquery)
     matchingplaylists = cursor.fetchall()
+    # print(matchingplaylists)
     # using a case basis approach to evaluate our problem and provide the user with necessary options.
     if len(matchingplaylists) == 0:
         print("No matching playlists found!")
@@ -248,8 +225,12 @@ def searchPlaylists(session_id,uid,connection,cursor):
 def playlistsDesc(playlist_id,uid,connection,cursor):
     #the playlist description function is called when the user chooses to view the list of songs 
     # from a playlist 
-    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = ? AND p.uid = ? AND p.pid = pl.pid AND pl.sid = s.sid; ",(playlist_id,uid)
-    cursor.execute(playlistsongquery)
+    # artistsongquery = '''SELECT s.sid, s.title, s.duration FROM songs s, perform p, artists a WHERE a.name=:NAME AND p.aid = a.aid AND p.sid = s.sid;'''
+    
+    print("playlist_id",playlist_id)
+
+    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = ? AND p.uid = ? AND p.pid = pl.pid AND pl.sid = s.sid; "
+    cursor.execute(playlistsongquery,(int(playlist_id),uid))
     plsongs = cursor.fetchall()
     print("The Songs of your Playlist are: ")
     if len(plsongs)!=0:
@@ -271,28 +252,29 @@ def playlistsDesc(playlist_id,uid,connection,cursor):
 def searchArtists(session_id,uid,connection,cursor):
     
     #takes the user keyword or a bunch of user keywords.
-    userkeywords = input("please enter your keywords to find matching playlists: ").split()
+    userkeywords = input("please enter your keywords to find matching artists: ").split()
     if len(userkeywords) == 0:
         print("please enter a valid keyword/ keywords.")
         return
     # the entire playlist query is broken into chunks of the overall query.
     # The playlistquery variable aims to display at the most top 5 matches in response at a time if matches exceed more than 5 entries
     # to keyword entry 
-    artistquery = "SELECT DISTINCT a.name, a.nationality, COUNT(p.sid) FROM artists a, perform p, songs s WHERE p.aid = a.aid AND p.sid = s.sid "
+    artistquery = "SELECT name, nationality, COUNT() AS QUERY FROM("
+    unionquery = ""
     index = 0
     for word in userkeywords:
             
             if index == 0:
-                artistquery += " AND (a.name LIKE '%{}%' OR s.title LIKE '%{}%' )".format(word,word)
+                unionquery += "SELECT a.name,a.nationality FROM artists a, perform p, songs s WHERE a.aid = p.aid AND p.sid = s.sid AND ((s.title LIKE '%{}%') OR (a.name LIKE '%{}%'))".format(word,word)
+                index = 1
             else:
-                artistquery += " OR (a.name LIKE '%{}%'OR s.title LIKE '%{}%' )".format(word,word)
-            index += 1
-    artistquery += "GROUP BY a.name ORDER BY ("
-    for word in userkeywords:
-        artistquery += "CASE WHEN a.name LIKE '%{}%' THEN 1 ELSE 0 END + CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word,word)
-    artistquery = artistquery.rstrip("+ ")
-    artistquery += ") DESC;"
-    print(artistquery)
+                unionquery += " UNION "
+                unionquery += "SELECT a.name,a.nationality FROM artists a, perform p, songs s WHERE a.aid = p.aid AND p.sid = s.sid AND ((s.title LIKE '%{}%') OR (a.name LIKE '%{}%'))".format(word,word)
+            
+    artistquery += unionquery
+    artistquery += ") "
+    artistquery += "GROUP BY name ORDER BY COUNT() DESC;"
+    # print(artistquery)
     # executing the query to find relevant matches
     cursor.execute(artistquery)
     matchingartists = cursor.fetchall()
@@ -308,43 +290,55 @@ def searchArtists(session_id,uid,connection,cursor):
             useroption = input("Select a Artist(Numeric input) or press enter ")
             if useroption.isnumeric():
                     
-                artist_id = matchingartists[int(useroption) -1][0]
-                artistsDesc(artist_id,uid,connection,cursor)
+                artist_name = matchingartists[int(useroption) -1][0]
+                artistsDesc(artist_name,uid,connection,cursor)
                 break
             else:
                 #TODO go to main menu?
                 break
                
     else:
-        for i in range(len(matchingartists)):
-            if i > 5:
+        s = 0
+        # print("s",s)
+        print(len(matchingartists))
+        for i in range(5,len(matchingartists)+1,5):
+            # print(i)
+            print(len(matchingartists[s:i]))
+            for j in range(len(matchingartists[s:i])):
+                # print(j)
+                print(j+1, matchingartists[s+j])
+            s = i
+            print("What do you what to do (select number)?")
+            print("1. See more search result")
+            print("2. Enter the result no")
+            print("3. Go to home page")
+            print("4. Log Out")
+            print("5. Exit")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                for j in range(len(matchingartists[5:])):
+                    print(j+1, matchingartists[j + 5])
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "2":
                 while True:
-                    userpotion = input('Select an Artist(Numeric input) or press enter to see more matches:  ')
-                    if  len(useroption) == 0 or userpotion.isnumeric():
+                    useroption = input("Select a Artist(Numeric input) or press enter ")
+                    if useroption.isnumeric():
                         break
-                if len(useroption) == 0:
-                    print("ArtistName","Nationality","#songs performed")
-                    for k in range(5, len(matchingartists)):
-                        print(k+1, matchingartists[k])
-                    while True:
-                            useroption2 = input("Please Select an artistt: ")
-                            if useroption2.isnumeric():
-                                break
-                    # song_id = matchingsongs[useroption2-1][0]
-                    artist_id = matchingartists[int(useroption2)-1][0]
-                    action = input("Would you like to access the artistDescription() menu? Press Y")
-                    if action.upper() == 'Y':
-                        artistsDesc(artist_id,uid,connection,cursor)
-                    break
-
-
-                else:
-                    artist_id = matchingartists[int(useroption)-1][0]
-                    action = input("Would you like to access the playlistDescription() menu? Press Y")
-                    if action.upper() == 'Y':
-                        artistsDesc(artist_id,uid,connection,cursor)
-                    break
-            print(i+1, matchingartists[i])
+                artist_name = matchingartists[s + int(useroption) -1][0]
+                artistsDesc(artist_name,uid,connection,cursor)
+                break
+            elif choice == "3":
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "4":
+                main.logout()
+            elif choice == "5":
+                exit()
+            else:
+                print("Invalid choice")
+                continue
+            
 
 
 def artistsDesc(artist_id,uid,connection,cursor):

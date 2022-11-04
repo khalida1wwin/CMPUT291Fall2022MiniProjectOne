@@ -97,13 +97,13 @@ def addToPL(sid, uid,connection, cursor):
                         WHERE pid=:PID;''',{"PID":pid})
 
         sorderOR = cursor.fetchone()
-        print(sorderOR)
-        print(sorderOR[0])
+        # print(sorderOR)
+        # print(sorderOR[0])
         if sorderOR[0] != None:
             sorder = int(sorderOR[0]) + 1
         else:
             sorder = 1
-        print(sorder)
+        # print(sorder)
         try:
             cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
             print("Song inserted to the playlist")

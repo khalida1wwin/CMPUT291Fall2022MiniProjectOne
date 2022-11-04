@@ -96,7 +96,15 @@ class pages():
         if choice == "1":
             self.StartSession()
         elif choice == "2":
-            self.searchSongsAndPlaylists()
+            userInput = input("Do you want to search for songs(s) or playlists(p)?")
+            if userInput == "s":
+                userAction.searchSongs(self.session_id,self.uid,self.connection,self.cursor)
+            elif userInput == "p":
+                userAction.searchPlaylists(self.session_id,self.uid,self.connection,self.cursor)
+            else:
+                print("invalid input")
+                self.home()
+
         elif choice == "3":
             self.SearchForArtists()
         elif choice == "4":
@@ -109,23 +117,7 @@ class pages():
         userAction.searchSongs(self.session_id,self.uid,self.connection,self.cursor)
         # print("=> search results : (playlist name or song name)")
         # print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
-        print("What do you what to do (select number)?")
-        print("1. See more search result")
-        print("2. Enter the result no")
-        print("3. Go to home page")
-        print("4. Log Out")
-        print("5. Exit")
-        choice = input("Enter your choice: ")
-        if choice == "1":
-            self.moreSearchResult()
-        elif choice == "2":
-            self.SelectResult()
-        elif choice == "3":
-            self.home()
-        elif choice == "4":
-            self.logout()
-        elif choice == "5":
-            exit()
+        # self.home()
     def SearchForArtists(self):
         userAction.searchArtists(self.session_id,self.uid,self.connection,self.cursor) 
         # print("=> search results : (playlist name or song name)")
