@@ -115,33 +115,45 @@ def searchSongs(session_id,uid,connection,cursor):
             
                
     else:
-        for i in range(len(matchingsongs)):
-            if i > 5:
+        s = 0
+        print(len(matchingsongs))
+        for i in range(5,len(matchingsongs)+1,5):
+            # print(i)
+            print(len(matchingsongs[s:i]))
+            for j in range(len(matchingsongs[s:i])):
+                # print(j)
+                print(j+1, matchingsongs[s+j])
+            s = i
+            print("What do you what to do (select number)?")
+            print("1. See more search result")
+            print("2. Enter the result no")
+            print("3. Go to home page")
+            print("4. Log Out")
+            print("5. Exit")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                for j in range(len(matchingsongs[5:])):
+                    print(j+1, matchingsongs[j + 5])
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "2":
                 while True:
-                    userpotion = input('Select a song or press enter to see more matches:  ')
-                    if  len(useroption) == 0 or userpotion.isnumeric():
+                    useroption = input("Select a song(Numeric input) or press enter ")
+                    if useroption.isnumeric():
                         break
-                if len(useroption) == 0:
-                    for k in range(5, len(matchingsongs)):
-                        print("Song ",k+1, matchingsongs[k])
-                    while True:
-                            useroption2 = input("Please Select a song: ")
-                            if useroption2.isnumeric():
-                                break
-                    # song_id = matchingsongs[useroption2-1][0]
-                    song_id = matchingsongs[int(useroption2)-1][0]
-                    action = input("Would you like to access the songAction() menu? Press Y")
-                    if action.upper() == 'Y':
-                        
-                        main.pages(uid,connection, cursor).songAction(song_id,uid,connection,cursor)
-                    break
-                else:
-                    song_id = matchingsongs[int(useroption)-1][0]
-                    action = input("Would you like to access the songAction() menu? Press Y")
-                    if action.upper() == 'Y':
-                        songactions.songAction(song_id,uid,connection,cursor)
-                    break
-            print(i+1, matchingsongs[i])
+                song_id = matchingsongs[s + int(useroption) -1][0]
+                songactions.songAction(song_id,uid,connection,cursor)
+                break
+            elif choice == "3":
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "4":
+                main.logout()
+            elif choice == "5":
+                exit()
+            else:
+                print("Invalid choice")
+                continue
 
  
 def searchPlaylists(session_id,uid,connection,cursor):
@@ -192,34 +204,45 @@ def searchPlaylists(session_id,uid,connection,cursor):
                 break
                
     else:
-        #the following lines of code is executed when more than 5 entries to a query search is detected.
-        for i in range(len(matchingplaylists)):
-            if i > 5:
+        s = 0
+        print(len(matchingplaylists))
+        for i in range(5,len(matchingplaylists)+1,5):
+            # print(i)
+            print(len(matchingplaylists[s:i]))
+            for j in range(len(matchingplaylists[s:i])):
+                # print(j)
+                print(j+1, matchingplaylists[s+j])
+            s = i
+            print("What do you what to do (select number)?")
+            print("1. See more search result")
+            print("2. Enter the result no")
+            print("3. Go to home page")
+            print("4. Log Out")
+            print("5. Exit")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                for j in range(len(matchingplaylists[5:])):
+                    print(j+1, matchingplaylists[j + 5])
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "2":
                 while True:
-                    userpotion = input('Select a Playist(Numeric input) or press enter to see more matches:  ')
-                    if  len(useroption) == 0 or userpotion.isnumeric():
+                    useroption = input("Select a playlist(Numeric input) or press enter ")
+                    if useroption.isnumeric():
                         break
-                if len(useroption) == 0:
-                    for k in range(5, len(matchingplaylists)):
-                        print("Playlist ",k+1, matchingplaylists[k])
-                    while True:
-                            useroption2 = input("Please Select a Playlist(Numeric Value) or press enter to view more: ")
-                            if useroption2.isnumeric():
-                                break
-                    playlist_id = matchingplaylists[int(useroption2)-1][0]
-                    action = input("Would you like to access the playlistDescription() menu? Press Y")
-                    if action.upper() == 'Y':
-                        playlistsDesc(playlist_id,uid,connection,cursor)
-                    break
-
-
-                else:
-                    playlist_id = matchingplaylists[int(useroption)-1][0]
-                    action = input("Would you like to access the playlistDescription() menu? Press Y")
-                    if action.upper() == 'Y':
-                        playlistsDesc(playlist_id,uid,connection,cursor)
-                    break
-            print(i+1, matchingplaylists[i])
+                playlist_name = matchingplaylists[s + int(useroption) -1][0]
+                playlistsDesc(playlist_name,uid,connection,cursor)
+                break
+            elif choice == "3":
+                p = main.pages(uid,connection, cursor)
+                p.home()
+            elif choice == "4":
+                main.logout()
+            elif choice == "5":
+                exit()
+            else:
+                print("Invalid choice")
+                continue
 
 
 def playlistsDesc(playlist_id,uid,connection,cursor):
