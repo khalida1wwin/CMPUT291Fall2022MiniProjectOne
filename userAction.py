@@ -7,8 +7,9 @@ import songactions
 def session_start(session_id,uid,connection,cursor):
     #the session_start() function checks for a session id to see if a session is already in place or not
     #the system assigns a session number incase its not started.
-    if session_id != None:
-        print("End the current session before starting a new session")
+    if session_id:
+        print("Restarting the current session ")
+        startDate = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
     else:
         while True:
             session_id = (random.randint(1,10000)) #assigning a random session id with a value b/w 1 and 10000
@@ -52,17 +53,6 @@ def end_session(session_id,uid,connection,cursor):
         print("The session",session_id,"has been ended")
         return session_id
 
-    # if session_id != None:
-    #     endDate = datetime.datetime.now().strftime("%H:%M %d/%m/%Y")
-    #     cursor.execute('UPDATE sessions SET end = ? WHERE uid=? AND sno =?;',(endDate,uid,session_id))
-    #     connection.commit()
-    #     print("Session ended successfully!")
-    #     session_id = None
-    #     return session_id
-    # else:
-    #     print("You are trying to end a session which is not being utilized")
-    
-    # return session_id
 		
 def searchSongs(session_id,uid,connection,cursor):
     
@@ -75,11 +65,8 @@ def searchSongs(session_id,uid,connection,cursor):
     # The songquery variable aims to display at the most top 5 matches in response 
     # to keyword entry 
     songquery = "SELECT DISTINCT s.sid, s.title, s.duration FROM songs s"
-    # print(userkeywords)
-    # print("songquery",songquery)
     index = 0
     for word in userkeywords:
-            # print(songquery)
             if index == 0:
                 songquery += " WHERE (s.title LIKE '%{}%' )".format(word)
             else:
@@ -90,28 +77,27 @@ def searchSongs(session_id,uid,connection,cursor):
         songquery += "CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
     songquery = songquery.rstrip("+ ")
     songquery += ") DESC;"
-
-    # print(songquery)
     cursor.execute(songquery)
     matchingsongs = cursor.fetchall()
 
     if len(matchingsongs) == 0:
         print("No matching songs found!")
+        p = main.pages(uid,connection, cursor)
+        p.home()
         return
     elif len(matchingsongs) <= 5:
         for i in range(len(matchingsongs)):
-            # print("Song No | ",i+1, "Song ID |",matchingsongs[i][0],"Song Title |",matchingsongs[i][1],"Song Duration |",matchingsongs[i][2])
-            print("Song ",i+1,matchingsongs[i])
+            print("Song No  ",i+1, "|Song ID ",matchingsongs[i][0],"|Song Title ",matchingsongs[i][1],"|Song Duration ",matchingsongs[i][2])
         while True:
             useroption = input("Select a song(Numerical Value) to view details or press enter to exit")
             if useroption.isnumeric():
                 # break
                 song_id = matchingsongs[int(useroption) -1][0]
-                # action = input("Please enter a song action to perform: 1 action a 2 actiob b...")
                 songactions.songAction(song_id, uid,connection, cursor)
                 break
             elif len(useroption) == 0:
-                #TODO go to main command.
+                p = main.pages(uid,connection, cursor)
+                p.home()
                 break
             
                
@@ -122,8 +108,7 @@ def searchSongs(session_id,uid,connection,cursor):
             # print(i)
             print(len(matchingsongs[s:i]))
             for j in range(len(matchingsongs[s:i])):
-                # print(j)
-                print(j+1, matchingsongs[s+j])
+                print("Song No ",j+1, "|Song ID ",matchingsongs[s+j][0],"|Song Title ",matchingsongs[s+j][1],"|Song Duration ",matchingsongs[s+j][2])
             s = i
             print("What do you what to do (select number)?")
             print("1. See more search result")
@@ -134,7 +119,7 @@ def searchSongs(session_id,uid,connection,cursor):
             choice = input("Enter your choice: ")
             if choice == "1":
                 for j in range(len(matchingsongs[5:])):
-                    print(j+1, matchingsongs[j + 5])
+                    print("Song No ",j+1, "|Song ID ",matchingsongs[j + 5][0],"|Song Title ",matchingsongs[j + 5][1],"|Song Duration ",matchingsongs[j + 5][2])
                 p = main.pages(uid,connection, cursor)
                 p.home()
             elif choice == "2":
@@ -185,10 +170,11 @@ def searchPlaylists(session_id,uid,connection,cursor):
     # the following lines of code execute the SQL search on the data base provided
     cursor.execute(playlistquery)
     matchingplaylists = cursor.fetchall()
-    # print(matchingplaylists)
     # using a case basis approach to evaluate our problem and provide the user with necessary options.
     if len(matchingplaylists) == 0:
         print("No matching playlists found!")
+        p = main.pages(uid,connection, cursor)
+        p.home()
         return
     elif len(matchingplaylists) <= 5:
         for i in range(len(matchingplaylists)):
@@ -201,7 +187,8 @@ def searchPlaylists(session_id,uid,connection,cursor):
                 playlistsDesc(playlist_id,uid,connection,cursor)
                 break
             else:
-                #TODO go to main menu?
+                p = main.pages(uid,connection, cursor)
+                p.home()
                 break
                
     else:
@@ -305,6 +292,8 @@ def searchArtists(session_id,uid,connection,cursor):
 
     if len(matchingartists) == 0:
         print("No matching playlists found!")
+        p = main.pages(uid,connection, cursor)
+        p.home()
         return
     elif len(matchingartists) <= 5:
         print("ArtistName","Nationality","#songs performed")
@@ -367,13 +356,10 @@ def searchArtists(session_id,uid,connection,cursor):
 
 def artistsDesc(artist_id,uid,connection,cursor):
     artistsongquery = '''SELECT s.sid, s.title, s.duration FROM songs s, perform p, artists a WHERE a.name=:NAME AND p.aid = a.aid AND p.sid = s.sid;'''
-    # print(artist_id)
     cursor.execute(artistsongquery,{"NAME":artist_id})
 
     artsongs = cursor.fetchall()
-    # print("artistsongquery:",artistsongquery)
-    # print("artsongs")
-    # print(artsongs)
+
     print("The Songs of your Artist are: ")
     if len(artsongs)!=0:
         for i in range(len(artsongs)):

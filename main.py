@@ -203,50 +203,6 @@ class pages():
             return
         elif cmd == '6':
             exit()
-    def listen(sid, uid,connection, cursor):
-    #This function updates the listen count if a song is already listened to in a session. It inserts
-    # a listen event to the session if the song is not listened to in the session. It creates a new session, if there is no existing one.
-        checkSession = '''SELECT sno FROM sessions
-                        WHERE uid=:UID 
-                        AND end IS NULL;'''
-        cursor.execute(checkSession, {"UID":uid})
-        sessionExist = cursor.fetchall()
-        print(sessionExist)
-        if len(sessionExist) == 0:
-            self.session_id,Date = userAction.session_start(None,uid,connection, cursor) 
-            print("New sno created",sno)
-            #Assumed that the session number is returned 
-        else:
-            sno = sessionExist[0][0]
-            print(sno)
-    
-        cursor.execute('''SELECT *
-                        FROM listen 
-                        WHERE uid = ?
-                        AND sid = ?
-                        AND sno = ?;''', (uid,sid,sno))
-        songExist = cursor.fetchall()
-        #You can assume the user cannot have more than one active session.
-        # print(songExist[0])
-        # print(songExist[0])
-        # if songExist!= 0:
-        # print(songExist)
-        # print(len(songExist))
-        if len(songExist) != 0:
-            cursor.execute('''UPDATE listen 
-                            SET cnt=cnt+1 
-                            WHERE uid=? 
-                            AND sid=? 
-                            AND sno=?''', (uid,sid,sno))
-            connection.commit()
-            print("Update compeleted!")
-        else:
-            cursor.execute('''INSERT INTO listen VALUES (?, ?, ?, ?)''', (uid,sno,sid,1))
-            connection.commit()
-            print("Insert compeleted!")
-        print("Listening to Song")
-        self.songAction(sid,uid,connection, cursor)
-        return
     def logout(self):
         self.session_id = userAction.end_session(self.session_id,self.connection, self.cursor)
         self.uid = None

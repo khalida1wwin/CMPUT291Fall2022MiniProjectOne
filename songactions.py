@@ -30,7 +30,7 @@ def info(sid,uid,connection, cursor):
     playlist = cursor.fetchall()
     for one_entry in playlist:
         print(one_entry)
-    songAction(sid,uid,connection, cursor) # Go back to the menu after everything is done??
+    songAction(sid,uid,connection, cursor) # Go back to the menu after everything is done
     return
 
 def listen(sid, uid,connection, cursor):
@@ -41,7 +41,7 @@ def listen(sid, uid,connection, cursor):
                     AND end IS NULL;'''
     cursor.execute(checkSession, {"UID":uid})
     sessionExist = cursor.fetchall()
-    # print(sessionExist)
+
     if len(sessionExist) == 0:
         sno,Date = userAction.session_start(None,uid,connection, cursor) 
         main.pages(uid,connection, cursor).session_id = sno
@@ -58,11 +58,6 @@ def listen(sid, uid,connection, cursor):
                     AND sno = ?;''', (uid,sid,sno))
     songExist = cursor.fetchall()
     #You can assume the user cannot have more than one active session.
-    # print(songExist[0])
-    # print(songExist[0])
-    # if songExist!= 0:
-    # print(songExist)
-    # print(len(songExist))
     if len(songExist) != 0:
         cursor.execute('''UPDATE listen 
                         SET cnt=cnt+1 
@@ -82,8 +77,8 @@ def listen(sid, uid,connection, cursor):
 def addToPL(sid, uid,connection, cursor):
     #This function  adds this song (sid) to an existing playlist owned by the user (if any) or to a new playlist.
     #Can have same song multiple time in the playlist
-    playlist = input("Enter the name of the plylist you wan to add to") 
-    print("It will create a newplaylist of it doesn't exist or will add to the given playlist name")
+    playlist = input("Enter the name of the playlist you want to add to") 
+    print("It will create a new playlist if it doesn't exist or will add to the given playlist name")
     # Forum: Yes, sid and pid are keys for songs and playlists but the titles can be the same.
     checkSong = '''SELECT pid FROM playlists
                     WHERE title LIKE ? 
@@ -97,8 +92,6 @@ def addToPL(sid, uid,connection, cursor):
                         WHERE pid=:PID;''',{"PID":pid})
 
         sorderOR = cursor.fetchone()
-        # print(sorderOR)
-        # print(sorderOR[0])
         if sorderOR[0] != None:
             sorder = int(sorderOR[0]) + 1
         else:
@@ -112,13 +105,9 @@ def addToPL(sid, uid,connection, cursor):
         connection.commit()
     else:
         #New playlist
-        # print(cursor.fetchall())
-    
         cursor.execute('''SELECT MAX(pid) 
                         FROM playlists;''')
         maxPid = cursor.fetchone()
-        # print(maxPid)
-        # print(maxPid[0])
         if maxPid[0] != None:
             pid = int(maxPid[0]) + 1
         else:
@@ -134,7 +123,7 @@ def addToPL(sid, uid,connection, cursor):
 
 def songAction(sid, uid,connection, cursor):
     # This function displays all action that can be performed on a song by a user and also provides option to go to user menu, logout or quit the program.
-    print("Please select a number between 1 to 6 as desceibed below):")
+    print("Please select a number between 1 to 6 as described below):")
     print('1. Listen to this song.')
     print('2. More information.')
     print('3. Add to playlist.')
