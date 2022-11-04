@@ -229,8 +229,8 @@ def playlistsDesc(playlist_id,uid,connection,cursor):
     
     print("playlist_id",playlist_id)
 
-    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = ? AND p.uid = ? AND p.pid = pl.pid AND pl.sid = s.sid; "
-    cursor.execute(playlistsongquery,(int(playlist_id),uid))
+    playlistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid =:PID AND p.pid = pl.pid AND pl.sid = s.sid; "
+    cursor.execute(playlistsongquery,({"PID":int(playlist_id)}))
     plsongs = cursor.fetchall()
     print("The Songs of your Playlist are: ")
     if len(plsongs)!=0:
@@ -239,7 +239,7 @@ def playlistsDesc(playlist_id,uid,connection,cursor):
         while True:
             #Allowing the user to interact with their chosen song and perform their actions.
             userinput = input("Would you like to view a song(Numeric Input) and its details or exit?")
-            if (userinput.isnumeric()) and (userinput <= len(plsongs)):
+            if (userinput.isnumeric()) and (int(userinput) <= len(plsongs)):
                 song_id = plsongs[int(userinput) - 1][0]
                 songactions.songAction(song_id,uid,connection,cursor)
                 break
