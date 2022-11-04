@@ -291,9 +291,9 @@ if __name__ == "__main__":
             elif  inp2  == "2":
                 print("Sign up")
                 # signup
-                user1 = user()
+                user1 = user(connection, cursor)
                 curr_id = user1.signup()
-                p = pages(curr_id)
+                p = pages(curr_id,connection, cursor)
                 p.home()
             elif  inp2  == "3":
                 print("Exit")
@@ -307,9 +307,9 @@ if __name__ == "__main__":
             if inp2  == "1":
                 print("Log in")
                 # login
-                user1 = user()
+                user1 = user(connection, cursor)
                 curr_id = user1.login("A")
-                p = pages(curr_id)
+                p = pages(curr_id,connection, cursor)
 
                 artist.artistAction(curr_id,connection, cursor)
 
