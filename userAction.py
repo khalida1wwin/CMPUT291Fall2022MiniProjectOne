@@ -287,12 +287,12 @@ def searchArtists(session_id,uid,connection,cursor):
             else:
                 artistquery += " OR (a.name LIKE '%{}%'OR s.title LIKE '%{}%' )".format(word,word)
             index += 1
-    artistquery += " ORDER BY ("
+    artistquery += "GROUP BY a.name ORDER BY ("
     for word in userkeywords:
         artistquery += "CASE WHEN a.name LIKE '%{}%' THEN 1 ELSE 0 END + CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word,word)
     artistquery = artistquery.rstrip("+ ")
     artistquery += ") DESC;"
-
+    print(artistquery)
     # executing the query to find relevant matches
     cursor.execute(artistquery)
     matchingartists = cursor.fetchall()
@@ -348,20 +348,22 @@ def searchArtists(session_id,uid,connection,cursor):
 
 
 def artistsDesc(artist_id,uid,connection,cursor):
-    artistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, artists a, perform p WHERE a.aid =:AID AND p.aid = a.aid AND p.sid = s.sid; "
-    cursor.execute(artistsongquery,{"AID":artist_id})
+    artistsongquery = '''SELECT s.sid, s.title, s.duration FROM songs s, perform p, artists a WHERE a.name=:NAME AND p.aid = a.aid AND p.sid = s.sid;'''
+    # print(artist_id)
+    cursor.execute(artistsongquery,{"NAME":artist_id})
 
     artsongs = cursor.fetchall()
-    print("artistsongquery:",artistsongquery)
-    print("artsongs")
-    print(artsongs)
+    # print("artistsongquery:",artistsongquery)
+    # print("artsongs")
+    # print(artsongs)
     print("The Songs of your Artist are: ")
     if len(artsongs)!=0:
         for i in range(len(artsongs)):
             print(i+1,artsongs[i])
         while True:
+           
             userinput = input("Would you like to view a song(Numeric Input) and its details or exit?")
-            if (userinput.isnumeric()) and (userinput <= len(artsongs)):
+            if (userinput.isnumeric()) and (int(userinput) <= len(artsongs)):
                 song_id = artsongs[int(userinput) - 1][0]
                 songactions.songAction(song_id,uid,connection,cursor)
                 break
