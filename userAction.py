@@ -100,6 +100,7 @@ def searchSongs(session_id,uid,connection,cursor):
         return
     elif len(matchingsongs) <= 5:
         for i in range(len(matchingsongs)):
+            # print("Song No | ",i+1, "Song ID |",matchingsongs[i][0],"Song Title |",matchingsongs[i][1],"Song Duration |",matchingsongs[i][2])
             print("Song ",i+1,matchingsongs[i])
         while True:
             useroption = input("Select a song(Numerical Value) to view details or press enter to exit")
