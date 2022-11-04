@@ -81,18 +81,37 @@ def searchSongs(session_id,uid,connection,cursor):
     for word in userkeywords:
             # print(songquery)
             if index == 0:
-                songquery += " WHERE (s.title LIKE '{}' )".format(word)
+                songquery += " WHERE (s.title LIKE '%{}%' )".format(word)
             else:
-                songquery += " OR (s.title LIKE '{}' )".format(word)
+                songquery += " OR (s.title LIKE '%{}%' )".format(word)
             index += 1
-    songquery += " ORDER BY ("
+    songquery += " ORDER BY C as("
     for word in userkeywords:
-        songquery += "CASE WHEN s.title LIKE '{}' THEN 1 ELSE 0 END + ".format(word)
+        songquery += "CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
     songquery = songquery.rstrip("+ ")
-    songquery += ") DESC;"
+    songquery += ") DESC "
 
-    # print(songquery)
-    cursor.execute(songquery)
+    playlistquery = "SELECT DISTINCT p.pid, p.title, s.duration FROM songs s, playlists p, plinclude pl WHERE p.pid = pl.pid AND pl.sid = s.sid"
+    index = 0
+    for word in userkeywords:
+            
+            if index == 0:
+                playlistquery += " AND (p.title LIKE '%{}%' )".format(word)
+            else:
+                playlistquery += " OR (p.title LIKE '%{}%' )".format(word)
+            index += 1
+    playlistquery += " ORDER BY ("
+    for word in userkeywords:
+        playlistquery += "CASE WHEN p.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
+    playlistquery = playlistquery.rstrip("+ ")
+    playlistquery += ") DESC "
+
+    songAndPlaylist = songquery + " UNION " +playlistquery + ";"
+    print(songquery)
+    print(playlistquery)
+    print(songAndPlaylist)
+    cursor.execute(songAndPlaylist)
+    
     matchingsongs = cursor.fetchall()
 
     if len(matchingsongs) == 0:
@@ -164,13 +183,13 @@ def searchPlaylists(session_id,uid,connection,cursor):
     for word in userkeywords:
             
             if index == 0:
-                playlistquery += " AND (p.title LIKE '{}' )".format(word)
+                playlistquery += " AND (p.title LIKE '%{}%' )".format(word)
             else:
-                playlistquery += " OR (p.title LIKE '{}' )".format(word)
+                playlistquery += " OR (p.title LIKE '%{}%' )".format(word)
             index += 1
     playlistquery += " ORDER BY ("
     for word in userkeywords:
-        playlistquery += "CASE WHEN p.title LIKE '{}' THEN 1 ELSE 0 END + ".format(word)
+        playlistquery += "CASE WHEN p.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word)
     playlistquery = playlistquery.rstrip("+ ")
     playlistquery += ") DESC;"
 
@@ -264,13 +283,13 @@ def searchArtists(session_id,uid,connection,cursor):
     for word in userkeywords:
             
             if index == 0:
-                artistquery += " AND (a.name LIKE '{}' OR s.title LIKE '{}' )".format(word,word)
+                artistquery += " AND (a.name LIKE '%{}%' OR s.title LIKE '%{}%' )".format(word,word)
             else:
-                artistquery += " OR (a.name LIKE '{}'OR s.title LIKE '{}' )".format(word,word)
+                artistquery += " OR (a.name LIKE '%{}%'OR s.title LIKE '%{}%' )".format(word,word)
             index += 1
     artistquery += " ORDER BY ("
     for word in userkeywords:
-        artistquery += "CASE WHEN a.name LIKE '{}' THEN 1 ELSE 0 END + CASE WHEN s.title LIKE '{}' THEN 1 ELSE 0 END + ".format(word,word)
+        artistquery += "CASE WHEN a.name LIKE '%{}%' THEN 1 ELSE 0 END + CASE WHEN s.title LIKE '%{}%' THEN 1 ELSE 0 END + ".format(word,word)
     artistquery = artistquery.rstrip("+ ")
     artistquery += ") DESC;"
 
@@ -329,9 +348,13 @@ def searchArtists(session_id,uid,connection,cursor):
 
 
 def artistsDesc(artist_id,uid,connection,cursor):
-    artistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, artists a, perform p WHERE a.aid = ? AND p.aid = a.aid AND p.sid = s.sid; ",(artist_id)
-    cursor.execute(artistsongquery)
+    artistsongquery = "SELECT s.sid, s.title, s.duration FROM songs s, artists a, perform p WHERE a.aid =:AID AND p.aid = a.aid AND p.sid = s.sid; "
+    cursor.execute(artistsongquery,{"AID":artist_id})
+
     artsongs = cursor.fetchall()
+    print("artistsongquery:",artistsongquery)
+    print("artsongs")
+    print(artsongs)
     print("The Songs of your Artist are: ")
     if len(artsongs)!=0:
         for i in range(len(artsongs)):

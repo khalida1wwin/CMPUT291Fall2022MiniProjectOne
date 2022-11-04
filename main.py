@@ -127,9 +127,9 @@ class pages():
         elif choice == "5":
             exit()
     def SearchForArtists(self):
-        search = input("What do you want to search for? (seprate keywords with comma)")
-        print("=> search results : (playlist name or song name)")
-        print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
+        userAction.searchArtists(self.session_id,self.uid,self.connection,self.cursor) 
+        # print("=> search results : (playlist name or song name)")
+        # print("⇒ ID , the title, the duration, song / playlist : order by no. of keywords found till 1: top 5 matches")
         print("What do you what to do (select number)?")
         print("1. See more search result")
         print("2. Select result")
@@ -238,8 +238,8 @@ class pages():
         # print(songExist[0])
         # print(songExist[0])
         # if songExist!= 0:
-        print(songExist)
-        print(len(songExist))
+        # print(songExist)
+        # print(len(songExist))
         if len(songExist) != 0:
             cursor.execute('''UPDATE listen 
                             SET cnt=cnt+1 
@@ -256,7 +256,7 @@ class pages():
         self.songAction(sid,uid,connection, cursor)
         return
     def logout(self):
-        self.session_id = userAction.end_session(self.session_id)
+        self.session_id = userAction.end_session(self.session_id,self.connection, self.cursor)
         self.uid = None
 
 

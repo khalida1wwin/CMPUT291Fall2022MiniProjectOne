@@ -96,7 +96,7 @@ def addToPL(sid, uid,connection, cursor):
                         FROM plinclude 
                         WHERE pid=:PID;''',{"PID":pid})
 
-        sorderOR = int(cursor.fetchone())+ 1
+        sorderOR = cursor.fetchone()
         print(sorderOR)
         print(sorderOR[0])
         if sorderOR[0] != None:
@@ -104,7 +104,11 @@ def addToPL(sid, uid,connection, cursor):
         else:
             sorder = 1
         print(sorder)
-        cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
+        try:
+            cursor.execute('''INSERT INTO plinclude VALUES (?, ?, ?)''',(pid,sid,sorder))
+            print("Song inserted to the playlist")
+        except:
+            print("Song already in the playlist")
         connection.commit()
     else:
         #New playlist
